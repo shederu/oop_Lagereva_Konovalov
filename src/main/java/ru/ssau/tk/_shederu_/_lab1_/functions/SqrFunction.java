@@ -5,4 +5,5 @@ public class SqrFunction implements MathFunctions {
     public double apply(double x){
         return Math.pow(x, 2);
     }
+
 }
