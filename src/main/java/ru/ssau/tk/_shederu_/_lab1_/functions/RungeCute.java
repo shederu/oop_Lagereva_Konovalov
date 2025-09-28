@@ -17,7 +17,7 @@ public class RungeCute implements MathFunctions {
     @Override
     public double apply(double x) {
        double k1, k2, k3, k4;
-       double xi = x0;
+       double xi = x;
        double yi = y0;
        while (xi<x){
             k1 = h*f0.apply(xi);
