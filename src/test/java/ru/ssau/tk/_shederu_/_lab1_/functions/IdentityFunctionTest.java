@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 
 public class IdentityFunctionTest extends TestCase {
     private IdentityFunction test;
+    private final double delta = 1e-323;
 
     public void setUp() throws Exception {
         super.setUp();
@@ -16,9 +17,11 @@ public class IdentityFunctionTest extends TestCase {
     }
 
     public void testApply() {
-        assertEquals(1.0, test.apply(1.0));
-        assertEquals(9007199254740992.0, test.apply(9007199254740992.0));
-        assertEquals( 4.9E-324, test.apply(4.9E-324));
-
+        assertEquals(1.0, test.apply(1.0), delta);
+        assertEquals(1.7976931348623157E308, test.apply(1.7976931348623157E308), delta);
+        assertEquals(4.9E-324, test.apply(4.9E-324), delta);
+        assertEquals(0.0, test.apply(0.0), delta);
+        assertEquals(-1.7976931348623157E308, test.apply(-1.7976931348623157E308), delta);
+        assertEquals(-4.9E-324, test.apply(-4.9E-324), delta);
     }
 }
