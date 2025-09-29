@@ -1,6 +1,6 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
 
     private static class Node{
         private Node next;
@@ -187,5 +187,44 @@ private void addNode(double x, double y){
         }
 
         count--;
+    }
+
+    @Override
+    public void insert(double x, double y) {
+        if (head == null) {
+            addNode(x, y);
+            return;
+        }
+
+        Node current = head;
+        do {
+            if (current.x == x) {
+                current.y = y;
+                return;
+            }
+            current = current.next;
+        } while (current != head);
+
+        current = head;
+        Node newNode = new Node(x, y);
+
+        do {
+            if (current.x > x) {
+                break;
+            }
+            current = current.next;
+        } while (current != head);
+
+        Node prevNode = current.prev;
+
+        newNode.next = current;
+        newNode.prev = prevNode;
+        prevNode.next = newNode;
+        current.prev = newNode;
+
+        if (current == head && head.x > x) {
+            head = newNode;
+        }
+        count++;
     }
 }
