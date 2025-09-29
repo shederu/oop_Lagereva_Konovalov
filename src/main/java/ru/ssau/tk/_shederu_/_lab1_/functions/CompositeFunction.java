@@ -6,8 +6,8 @@ public class CompositeFunction implements MathFunctions{
     private MathFunctions secondFunction;
 
     public CompositeFunction(MathFunctions g, MathFunctions f ){
-        this.firstFunction = f;
-        this.secondFunction = g;
+        this.firstFunction = g;
+        this.secondFunction = f;
     }
 
     @Override

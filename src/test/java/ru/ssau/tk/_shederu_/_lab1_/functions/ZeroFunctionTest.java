@@ -1,6 +1,7 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ZeroFunctionTest extends TestCase {
     private ZeroFunction first = new ZeroFunction();
