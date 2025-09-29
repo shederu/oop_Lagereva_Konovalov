@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTabulatedFunctionTest{
+    private final double eRate = 1e-10;
 
     @Test
     public void testConstructorAndMethods(){
@@ -83,5 +84,23 @@ public class ArrayTabulatedFunctionTest{
         function.remove(2);
         assertEquals(6.0, function.getX(2));
         assertEquals(8.0, function.getY(2));
+    }
+
+    @Test
+    void testInsertOperations() {
+        double[] xValues = {1.0, 3.0, 5.0};
+        double[] yValues = {2.0, 6.0, 10.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        assertEquals(3, function.getCount());
+        assertEquals(3.0, function.getX(1), eRate);
+
+        double[] newXValues = {1.0, 2.0, 3.0, 4.0, 5.0};
+        double[] newYValues = {2.0, 4.0, 6.0, 8.0, 10.0};
+        LinkedListTabulatedFunction newFunction = new LinkedListTabulatedFunction(newXValues, newYValues);
+
+        assertEquals(5, newFunction.getCount());
+        assertEquals(2.0, newFunction.getX(1), eRate);
+        assertEquals(4.0, newFunction.getY(1), eRate);
     }
 }
