@@ -46,7 +46,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
     }
 
-    public LinkedListTabulatedFunction(MathFunctions source, double xFrom, double xTo, int count) {
+    public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
         if (count < 2) {
             throw new IllegalArgumentException("At least 2 points required");
         }
@@ -109,72 +109,55 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     public int indexOfX(double x) {
         if (head == null) return -1;
-        Node p = head;
-        int i = 0;
-        do {
-            if (Math.abs(p.x - x) < eRate) {
+
+        Node current = head;
+        for (int i = 0; i < count; i++) {
+            if (Math.abs(current.x - x) < eRate) {
                 return i;
             }
-            p = p.next;
-            ++i;
-        } while (p != head);
+            current = current.next;
+        }
         return -1;
     }
 
     @Override
     public int indexOfY(double y) {
         if (head == null) return -1;
-        Node p = head;
-        int i = 0;
-        do {
-            if (Math.abs(p.y - y) < eRate) {
+
+        Node current = head;
+        for (int i = 0; i < count; i++) {
+            if (Math.abs(current.y - y) < eRate) {
                 return i;
             }
-            p = p.next;
-            ++i;
-        } while (p != head);
+            current = current.next;
+        }
         return -1;
     }
 
     @Override
     protected int floorIndexOfX(double x) {
-        if (head == null) return 0;
-        if (x < head.x) return 0;
-        if (x > head.prev.x) return count - 1;
-
-        Node current = head;
-        int index = 0;
-        while (index < count - 1) {
-            if (x >= current.x && x < current.next.x) {
-                return index;
+        if (x < getX(0)) return 0;
+        for (int i = 0; i < count - 1; i++) {
+            if (x >= getX(i) && x < getX(i + 1)) {
+                return i;
             }
-            current = current.next;
-            index++;
         }
         return count - 1;
     }
 
     @Override
     protected double extrapolateLeft(double x) {
-        if (head.next == head) return head.y;
-        Node first = head;
-        Node second = head.next;
-        return interpolate(x, first.x, second.x, first.y, second.y);
+        return interpolate(x, getX(0), getX(1), getY(0), getY(1));
     }
 
     @Override
     protected double extrapolateRight(double x) {
-        if (head.next == head) return head.y;
-        Node last = head.prev;
-        Node secondLast = last.prev;
-        return interpolate(x, secondLast.x, last.x, secondLast.y, last.y);
+        return interpolate(x, getX(count - 2), getX(count - 1), getY(count - 2), getY(count - 1));
     }
 
     @Override
     protected double interpolate(double x, int floorIndex) {
-        Node left = getNode(floorIndex);
-        Node right = getNode(floorIndex + 1);
-        return interpolate(x, left.x, right.x, left.y, right.y);
+        return interpolate(x, getX(floorIndex), getX(floorIndex + 1), getY(floorIndex), getY(floorIndex + 1));
     }
 
     @Override
