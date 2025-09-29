@@ -1,9 +1,8 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
-    private static final double eRate = 1e-9;
 
-    private static class Node {
+    private static class Node{
         private Node next;
         private Node prev;
         private double x;
@@ -18,43 +17,48 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     private Node head = null;
     private int count = 0;
 
-    private void addNode(double x, double y) {
+
+
+    private void addNode(double x, double y){
         Node nNode = new Node(x, y);
-        if (head == null) {
+        if(head == null){
             head = nNode;
             head.prev = head;
             head.next = head;
-        } else {
+        }
+        else{
             Node last = head.prev;
             last.next = nNode;
-            nNode.prev = last;
-            nNode.next = head;
             head.prev = nNode;
+            nNode.next = head;
+            nNode.next = last;
         }
+
         ++count;
     }
 
-    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {
-        if (xValues.length != yValues.length) {
-            throw new IllegalArgumentException("Arrays must have same length");
-        }
-        if (xValues.length < 2) {
-            throw new IllegalArgumentException("At least 2 points required");
-        }
+    public LinkedListTabulatedFunction(double[] xValues, double[] yValues){
         for (int i = 0; i < xValues.length; ++i) {
             addNode(xValues[i], yValues[i]);
         }
+
     }
 
-    public LinkedListTabulatedFunction(MathFunctions source, double xFrom, double xTo, int count) {
-        if (count < 2) {
-            throw new IllegalArgumentException("At least 2 points required");
-        }
-        if (xFrom > xTo) {
+    public LinkedListTabulatedFunction(MathFunctions source, double xFrom, double xTo, int count){
+        if(xFrom>xTo){
             double t = xFrom;
             xFrom = xTo;
             xTo = t;
         }
+
+        if(xTo == xFrom){
+            int i = 0;
+            while(i < count){
+                addNode(xFrom, source.apply(xFrom));
+                ++i;
+            }
+        }
+
 
         double step = (xTo - xFrom) / (count - 1);
         double x = xFrom;
@@ -64,14 +68,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             x += step;
         }
     }
-
-    private Node getNode(int index) {
-        if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Index out of bounds");
-        }
-        Node p = head;
-        for (int i = 0; i < index; ++i) {
-            p = p.next;
+    private Node getNode(int index){
+        Node p=head;
+        for(int i = 0; i<index; ++i){
+            p=p.next;
         }
         return p;
     }
