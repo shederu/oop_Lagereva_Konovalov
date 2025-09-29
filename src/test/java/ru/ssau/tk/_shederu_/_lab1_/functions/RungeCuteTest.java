@@ -1,15 +1,18 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class RungeCuteTest extends TestCase {
+public class RungeCuteTest{
     public double delta;
 
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    void setUp() {
         delta = 0.001;
     }
 
+    @Test
     public void testConstantFunctionSolution() {
         //dy/dx = 0, y(0) = 7 -> y(x) = 7
         MathFunctions zeroFunction = x -> 0;
@@ -23,6 +26,7 @@ public class RungeCuteTest extends TestCase {
         assertEquals(7.0, function.apply(100.0), delta);
     }
 
+    @Test
     public void testQuadraticFunctionSolution() {
         //dy/dx = 2*x/5, y(0) = 0 -> y(x) = x²/5
         MathFunctions identity = x -> x*2/5;
@@ -36,6 +40,7 @@ public class RungeCuteTest extends TestCase {
         assertEquals(3.199, function.apply(4.0), delta);
     }
 
+    @Test
     public void testComplexTrigonometricFunction() {
         //dy/dx = 2cos(x)+sin(x), y(0) = 0 -> y(x) = 2sin(x)-cos(x)-6
         MathFunctions derivative = x -> 2*java.lang.Math.cos(x) + java.lang.Math.sin(x);

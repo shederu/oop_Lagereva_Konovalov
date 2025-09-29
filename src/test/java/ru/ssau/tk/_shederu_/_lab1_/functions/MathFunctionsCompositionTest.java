@@ -1,10 +1,12 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class MathFunctionsCompositionTest extends TestCase {
+public class MathFunctionsCompositionTest{
     public double delta = 0.001;
 
+    @Test
     public void testSimpleComposition() {
         MathFunctions idF = new IdentityFunction();
         MathFunctions sqr = new SqrFunction();
@@ -16,6 +18,7 @@ public class MathFunctionsCompositionTest extends TestCase {
         assertEquals(1115136, comp.apply(-1056), delta);
     }
 
+    @Test
     public void testDoubleComposition(){
         MathFunctions idF = new IdentityFunction();
         MathFunctions sqr = new SqrFunction();

@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConstantFunctionTest{
-    private ConstantFunction first = new ConstantFunction(5.0);
-    private ConstantFunction second = new ConstantFunction(-10.0);
-    private ConstantFunction third = new ConstantFunction(-15.3);
+    private final ConstantFunction first = new ConstantFunction(5.0);
+    private final ConstantFunction second = new ConstantFunction(-10.0);
+    private final ConstantFunction third = new ConstantFunction(-15.3);
 
     @Test
     public void testApply() {

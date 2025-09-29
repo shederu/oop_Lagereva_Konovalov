@@ -1,9 +1,11 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class ArrayTabulatedFunctionTest extends TestCase {
+public class ArrayTabulatedFunctionTest{
 
+    @Test
     public void testConstructorAndMethods(){
         double[] xValues = {1.0, 2.0, 3.0, 4.0};
         double[] yValues = {1.0, 2.0, 3.0, 4.0};
@@ -25,6 +27,7 @@ public class ArrayTabulatedFunctionTest extends TestCase {
         assertEquals(2, function.indexOfY(3.0));
     }
 
+    @Test
     public void testFunctionConstructor(){
         MathFunctions function = new SqrFunction();
         ArrayTabulatedFunction tabFunction = new ArrayTabulatedFunction(function, 3.0, 6.0, 4);
@@ -50,6 +53,7 @@ public class ArrayTabulatedFunctionTest extends TestCase {
         assertEquals(9.0, equalBounds.getY(3));
     }
 
+    @Test
     public void testExtrapolateAndInterpolate(){
         double[] xValues = {0.0, 1.0, 2.0, 3.0};
         double[] yValues = {4.0, 6.0, 8.0, 10.0};
