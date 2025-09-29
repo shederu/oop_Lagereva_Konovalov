@@ -3,12 +3,7 @@ package ru.ssau.tk._shederu_._lab1_.functions;
 import junit.framework.TestCase;
 
 public class RungeCuteTest extends TestCase {
-    public double delta;
-
-    public void setUp() throws Exception {
-        super.setUp();
-        delta = 0.001;
-    }
+    public double delta = 0.001;
 
     public void testConstantFunctionSolution() {
         //dy/dx = 0, y(0) = 7 -> y(x) = 7
