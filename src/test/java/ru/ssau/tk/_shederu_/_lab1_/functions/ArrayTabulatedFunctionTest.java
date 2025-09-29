@@ -64,4 +64,24 @@ public class ArrayTabulatedFunctionTest{
         assertEquals(14.0, function.apply(5.0));
         assertEquals(7.0, function.apply(1.5));
     }
+
+    @Test
+    public void testRemove(){
+        double[] xValues = {-16.0, -2.0, 1.0, 3.0, 6.0};
+        double[] yValues = {3.0, 5.0, -2.0, 4.0, 8.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertEquals(-2.0, function.getX(1));
+        assertEquals(5.0, function.getY(1));
+        function.remove(1);
+        assertEquals(1.0, function.getX(1));
+        assertEquals(-2.0, function.getY(1));
+
+        assertEquals(3.0, function.getX(2));
+        assertEquals(4.0, function.getY(2));
+        function.remove(2);
+        assertEquals(6.0, function.getX(2));
+        assertEquals(8.0, function.getY(2));
+    }
 }
