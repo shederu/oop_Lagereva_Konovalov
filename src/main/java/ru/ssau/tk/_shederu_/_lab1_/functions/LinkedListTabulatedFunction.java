@@ -1,6 +1,6 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction {
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
 
     private static class Node{
         private Node next;
@@ -172,4 +172,20 @@ private void addNode(double x, double y){
 
     protected double interpolate(double x, double leftX, double rightX, double leftY, double rightY) { return leftY + (rightY - leftY) / (rightX - leftX) * (x - leftX); }
 
+    @Override
+    public void remove(int index) {
+        Node nToRem = getNode(index);
+
+        Node prevNode = nToRem.prev;
+        Node nextNode = nToRem.next;
+
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+
+        if (nToRem == head) {
+            head = nextNode;
+        }
+
+        count--;
+    }
 }
