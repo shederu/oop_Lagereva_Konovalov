@@ -2,7 +2,7 @@ package ru.ssau.tk._shederu_._lab1_.functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable{
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
     private  double[] xValues;
     private  double[] yValues;
     private  int count;
@@ -184,4 +184,27 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         count++;
     }
 
+    @Override
+    public void remove(int index) {
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Не существует элемента с данным индексом");
+        }
+
+        if (count <= 2) {
+            throw new IllegalStateException("В таблице должно остаться минимум 2 точки.");
+        }
+
+        double[] newXValues = new double[count - 1];
+        double[] newYValues = new double[count - 1];
+
+        System.arraycopy(xValues, 0, newXValues, 0, index);
+        System.arraycopy(yValues, 0, newYValues, 0, index);
+
+        System.arraycopy(xValues, index + 1, newXValues, index, count - index - 1);
+        System.arraycopy(yValues, index + 1, newYValues, index, count - index - 1);
+
+        xValues = newXValues;
+        yValues = newYValues;
+        count--;
+    }
 }
