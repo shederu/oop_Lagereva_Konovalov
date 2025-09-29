@@ -1,6 +1,7 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
+    private final double eRate = 1e-10;
 
     private static class Node{
         private Node next;
