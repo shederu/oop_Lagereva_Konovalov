@@ -1,6 +1,6 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
 
     private static class Node{
         private Node next;
