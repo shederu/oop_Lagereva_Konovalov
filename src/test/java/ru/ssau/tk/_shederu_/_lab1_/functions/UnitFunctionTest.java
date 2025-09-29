@@ -3,17 +3,19 @@ package ru.ssau.tk._shederu_._lab1_.functions;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UnitFunctionTest extends TestCase {
+public class UnitFunctionTest {
     private UnitFunction first = new UnitFunction();
     private UnitFunction second = new UnitFunction();
     private UnitFunction third = new UnitFunction();
 
+    @Test
     public void testApply() {
         assertEquals(1.0, first.apply(-3.4));
         assertEquals(1.0, second.apply(23.6));
         assertEquals(1.0, third.apply(-8.6));
     }
 
+    @Test
     public void testGetconst() {
         assertEquals(1.0, first.getconst());
         assertEquals(1.0, second.getconst());
