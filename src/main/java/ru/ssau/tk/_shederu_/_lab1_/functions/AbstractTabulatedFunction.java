@@ -6,11 +6,11 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction, Ma
     protected abstract double extrapolateRight(double x);
     protected abstract double interpolate(double x, int floorIndex);
 
-    protected double interpolate(double x, double leftX, double rightX, double leftY, double rightY) {
-        if (Math.abs(rightX - leftX) < 1e-10) {
-            throw new IllegalArgumentException("Интервал интерполяции должен быть больше нуля: leftX = " + leftX + ", rightX = " + rightX);
+    protected double interpolate(double x, double x0, double x1, double y0, double y1) {
+        if (Math.abs(x1 - x0) < 1e-10) {
+            throw new IllegalArgumentException("Интервал интерполяции должен быть больше нуля");
         }
-        return leftY + (rightY - leftY) * (x - leftX) / (rightX - leftX);
+        return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
     }
 
     @Override
