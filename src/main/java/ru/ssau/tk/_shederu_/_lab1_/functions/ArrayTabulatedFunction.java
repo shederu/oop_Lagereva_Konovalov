@@ -1,5 +1,7 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
+import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
+
 import java.util.Arrays;
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
@@ -8,9 +10,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     private  int count;
 
     public ArrayTabulatedFunction(double[] xValues, double[] yValues){
-        if(xValues.length != yValues.length){
-            throw new IllegalArgumentException("Ошибка. Разные длины.");
-        }
+
+        checkLengthIsTheSame(xValues, yValues);
+        checkSorted(xValues);
+
         if (xValues.length < 2){
             throw new IllegalArgumentException("Длина массива должна быть не меньше двух.");
         }
@@ -25,7 +28,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
         for(int i = 1; i < xValues.length; i++){
             if (xValues[i-1] > xValues[i]){
-                throw new IllegalArgumentException("Значения должны быть упорядочены.");
+                throw new ArrayIsNotSortedException("Значения должны быть упорядочены.");
             }
         }
 
@@ -207,31 +210,4 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         yValues = newYValues;
         count--;
     }
-
-    @Test
-    public void testInsert() {
-        double[] xValues = {1.0, 3.0, 5.0};
-        double[] yValues = {2.0, 6.0, 10.0};
-        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
-
-        function.insert(0.0, 1.0);
-        assertEquals(4, function.getCount());
-        assertEquals(0.0, function.getX(0));
-        assertEquals(1.0, function.getY(0));
-
-        function.insert(2.0, 4.0);
-        assertEquals(5, function.getCount());
-        assertEquals(2.0, function.getX(2));
-        assertEquals(4.0, function.getY(2));
-
-        function.insert(6.0, 12.0);
-        assertEquals(6, function.getCount());
-        assertEquals(6.0, function.getX(5));
-        assertEquals(12.0, function.getY(5));
-
-        function.insert(2.0, 8.0);
-        assertEquals(6, function.getCount());
-        assertEquals(8.0, function.getY(2));
-    }
-
 }

@@ -1,6 +1,10 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
+import ru.ssau.tk._shederu_._lab1_.exceptions.DifferentLengthOfArraysException;
+import ru.ssau.tk._shederu_._lab1_.exceptions.InterpolationException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTabulatedFunctionTest{
@@ -61,9 +65,8 @@ public class ArrayTabulatedFunctionTest{
 
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
-        assertEquals(-6.0, function.apply(-5.0));
-        assertEquals(14.0, function.apply(5.0));
-        assertEquals(7.0, function.apply(1.5));
+        assertEquals(5.6, function.apply(0.8));
+        assertEquals(4.6, function.apply(0.3));
     }
 
     @Test
@@ -116,4 +119,40 @@ public class ArrayTabulatedFunctionTest{
         assertEquals(8.0, function.getY(2));
     }
 
+    @Test
+    public void checkSortedTest(){
+        double[] yValues = {7.0, 2.0, 1.0};
+        double[] xValues = {3.0, 4.0, -2.0};
+
+        assertThrows(ArrayIsNotSortedException.class, () -> new ArrayTabulatedFunction(xValues, yValues));
+
+        double[] xValues2 = {-10.0, 13.0, -1.0};
+        assertThrows(ArrayIsNotSortedException.class, () -> new ArrayTabulatedFunction(xValues2, yValues));
+    }
+
+    @Test
+    public void checkLengths(){
+        double[] xValues = {9.0, 12.0, 14.0, 25.0};
+        double[] yValues = {-4.0, 2.0, 3.0};
+
+        assertThrows(DifferentLengthOfArraysException.class, () -> new ArrayTabulatedFunction(xValues, yValues));
+
+        double[] xValues2 = {10, 11, 12, 13, 14, 15};
+        assertThrows(DifferentLengthOfArraysException.class, ()-> new ArrayTabulatedFunction(xValues2, yValues));
+
+        double[] yValues2 = {-3, 2, 5, 7};
+        assertThrows(DifferentLengthOfArraysException.class, () -> new ArrayTabulatedFunction(xValues2, yValues2));
+    }
+
+    @Test
+    public void testInterpolateException(){
+        double[] xValues = {0.0, 1.0, 2.0, 3.0};
+        double[] yValues = {4.0, 6.0, 8.0, 10.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class, () -> function.apply(-20.0));
+        assertThrows(InterpolationException.class, () -> function.apply(5.0));
+        assertThrows(InterpolationException.class, () -> function.apply(10.0));
+    }
 }

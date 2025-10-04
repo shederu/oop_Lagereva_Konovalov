@@ -1,6 +1,9 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
+import ru.ssau.tk._shederu_._lab1_.exceptions.DifferentLengthOfArraysException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LinkedListTabulatedFunctionTest {
@@ -159,5 +162,20 @@ class LinkedListTabulatedFunctionTest {
             assertEquals(0.0, tabulated.getX(0), eRate);
             assertEquals(100.0, tabulated.getY(10), eRate);
         });
+    }
+
+    @Test
+    void testExceptions(){
+        double[] xValues = {-5.0, -3.0, -20.0};
+        double[] yValues = {3.0, 2.0, -5.0};
+
+        assertThrows(ArrayIsNotSortedException.class, () -> new LinkedListTabulatedFunction(xValues, yValues));
+
+        double[] xValues1 = {3.0, -1.0, 5.0};
+        assertThrows(ArrayIsNotSortedException.class, ()-> new LinkedListTabulatedFunction(xValues1, yValues));
+
+        double[] xValues3 = {-1.0, 3.0, 4.0, 5.0};
+        assertThrows(DifferentLengthOfArraysException.class, () -> new LinkedListTabulatedFunction(xValues3, yValues));
+
     }
 }

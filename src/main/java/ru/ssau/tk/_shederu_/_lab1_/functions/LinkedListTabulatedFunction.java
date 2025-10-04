@@ -1,5 +1,8 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
+import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
+import ru.ssau.tk._shederu_._lab1_.exceptions.DifferentLengthOfArraysException;
+
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
     private final double eRate = 1e-10;
 
@@ -29,6 +32,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
         else{
             Node last = head.prev;
+            if (head.prev.x > nNode.x){
+                throw new ArrayIsNotSortedException("Иксы должны быть отсортированы.");
+            }
             last.next = nNode;
             head.prev = nNode;
             nNode.next = head;
@@ -39,10 +45,13 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues){
+        if (xValues.length != yValues.length){
+            throw new DifferentLengthOfArraysException("Длина массивов должна быть одинакова.");
+        }
+
         for (int i = 0; i < xValues.length; ++i) {
             addNode(xValues[i], yValues[i]);
         }
-
     }
 
     public LinkedListTabulatedFunction(MathFunctions source, double xFrom, double xTo, int count){
