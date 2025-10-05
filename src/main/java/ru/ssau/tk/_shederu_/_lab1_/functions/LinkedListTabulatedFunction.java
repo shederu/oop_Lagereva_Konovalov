@@ -3,7 +3,9 @@ package ru.ssau.tk._shederu_._lab1_.functions;
 import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
 import ru.ssau.tk._shederu_._lab1_.exceptions.DifferentLengthOfArraysException;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable {
+import java.util.Iterator;
+
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, TabulatedFunction {
     private final double eRate = 1e-10;
 
     private static class Node{
@@ -212,5 +214,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
 
         count--;
+    }
+
+    @Override
+    public Iterator<Point> iterator(){
+        throw new UnsupportedOperationException("Итератор не поддерживается.");
     }
 }

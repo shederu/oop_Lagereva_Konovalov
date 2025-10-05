@@ -1,6 +1,6 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
-interface TabulatedFunction extends MathFunctions {
+interface TabulatedFunction extends MathFunctions, Iterable<Point> {
 
     int getCount();
 
