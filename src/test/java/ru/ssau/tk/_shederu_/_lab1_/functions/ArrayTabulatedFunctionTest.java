@@ -5,10 +5,12 @@ import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
 import ru.ssau.tk._shederu_._lab1_.exceptions.DifferentLengthOfArraysException;
 import ru.ssau.tk._shederu_._lab1_.exceptions.InterpolationException;
 
+import java.util.Iterator;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTabulatedFunctionTest{
-    private final double eRate = 1e-10;
+    private final double delta = 1e-10;
 
     @Test
     public void testConstructorAndMethods(){
@@ -154,5 +156,40 @@ public class ArrayTabulatedFunctionTest{
         assertThrows(InterpolationException.class, () -> function.apply(-20.0));
         assertThrows(InterpolationException.class, () -> function.apply(5.0));
         assertThrows(InterpolationException.class, () -> function.apply(10.0));
+    }
+
+    @Test
+    public void testIteratorWhile(){
+        double[] xValues = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
+        double[] yValues = {4.0, 6.0, 8.0, 10.0, -3.0, 2.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        Iterator<Point> iterator = function.iterator();
+        Point point;
+        int index = 0;
+        while (iterator.hasNext()){
+            point = iterator.next();
+            assertEquals(point.x, xValues[index], delta);
+            assertEquals(point.y, yValues[index], delta);
+            index++;
+        }
+        assertEquals(index, xValues.length);
+    }
+
+    @Test
+    public void testIteratorForEach(){
+        double[] xValues = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
+        double[] yValues = {4.0, 6.0, 8.0, 10.0, -3.0, 2.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        int index = 0;
+        for (Point point: function){
+            assertEquals(point.x, xValues[index]);
+            assertEquals(point.y, yValues[index]);
+            index++;
+        }
+        assertEquals(index, xValues.length);
     }
 }
