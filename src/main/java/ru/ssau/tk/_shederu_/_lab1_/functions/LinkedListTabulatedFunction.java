@@ -1,5 +1,7 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
 import ru.ssau.tk._shederu_._lab1_.exceptions.DifferentLengthOfArraysException;
 
@@ -24,68 +26,84 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     private int count = 0;
 
 
-
-    private void addNode(double x, double y){
-        Node nNode = new Node(x, y);
-        if(head == null){
-            head = nNode;
-            head.prev = head;
-            head.next = head;
-        }
-        else{
-            Node last = head.prev;
-            if (head.prev.x > nNode.x){
-                throw new ArrayIsNotSortedException("Иксы должны быть отсортированы.");
-            }
-            last.next = nNode;
-            head.prev = nNode;
-            nNode.next = head;
-            nNode.next = last;
+    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {
+        if (xValues.length < 2) {
+            throw new IllegalArgumentException("Длина таблицы должна быть не менее 2 точек");
         }
 
-        ++count;
-    }
-
-    public LinkedListTabulatedFunction(double[] xValues, double[] yValues){
-        if (xValues.length != yValues.length){
-            throw new DifferentLengthOfArraysException("Длина массивов должна быть одинакова.");
+        if (xValues.length != yValues.length) {
+            throw new IllegalArgumentException("Длина массивов должна быть одинакова.");
         }
 
-        for (int i = 0; i < xValues.length; ++i) {
+        checkSorted(xValues);
+
+        for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
         }
     }
 
-    public LinkedListTabulatedFunction(MathFunctions source, double xFrom, double xTo, int count){
-        if(xFrom>xTo){
-            double t = xFrom;
-            xFrom = xTo;
-            xTo = t;
+
+    private void addNode(double x, double y) {
+        Node newNode = new Node(x, y);
+
+        if (head == null) {
+            head = newNode;
+            head.prev = head;
+            head.next = head;
+        } else {
+            Node last = head.prev;
+            last.next = newNode;
+            newNode.prev = last;
+            newNode.next = head;
+            head.prev = newNode;
         }
 
-        if(xTo == xFrom){
-            int i = 0;
-            while(i < count){
-                addNode(xFrom, source.apply(xFrom));
-                ++i;
+        count++;
+    }
+
+    public LinkedListTabulatedFunction(MathFunctions source, double xFrom, double xTo, int count) {
+        if (count < 2) {
+            throw new IllegalArgumentException("Количество точек должно быть не менее 2");
+        }
+
+        if (xFrom > xTo) {
+            double temp = xFrom;
+            xFrom = xTo;
+            xTo = temp;
+        }
+
+        if (xFrom == xTo) {
+            double yValue = source.apply(xFrom);
+            for (int i = 0; i < count; i++) {
+                addNode(xFrom, yValue);
+            }
+        } else {
+            double step = (xTo - xFrom) / (count - 1);
+            for (int i = 0; i < count; i++) {
+                double x = xFrom + i * step;
+                double y = source.apply(x);
+                addNode(x, y);
             }
         }
-
-
-        double step = (xTo - xFrom) / (count - 1);
-        double x = xFrom;
-
-        for (int i = 0; i < count; i++) {
-            addNode(x, source.apply(x));
-            x += step;
-        }
     }
-    private Node getNode(int index){
-        Node p=head;
-        for(int i = 0; i<index; ++i){
-            p=p.next;
+    private Node getNode(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Индекс: " + index + ", Размер: " + count);
         }
-        return p;
+
+        if (index < count / 2) {
+            Node current = head;
+            for (int i = 0; i < index; i++) {
+                current = current.next;
+            }
+            return current;
+        } else {
+            Node current = head.prev;
+            for (int i = count - 1; i > index; i--) {
+                current = current.prev;
+            }
+            return current;
+        }
     }
 
     @Override
@@ -105,31 +123,37 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     public double getX(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Невозможный индекс!");
+        }
         return getNode(index).x;
     }
 
     @Override
     public double getY(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Невозможный индекс!");
+        }
         return getNode(index).y;
     }
 
     @Override
     public void setY(int index, double value) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Невозможный индекс!");
+        }
         getNode(index).y = value;
     }
 
     @Override
     public int indexOfX(double x) {
-        if (head == null) return -1;
-        Node p = head;
-        int i = 0;
-        do {
-            if (Math.abs(p.x - x) < eRate) {
+        Node current = head;
+        for (int i = 0; i < count; i++) {
+            if (Math.abs(current.x - x) < eRate) {
                 return i;
             }
-            p = p.next;
-            ++i;
-        } while (p != head);
+            current = current.next;
+        }
         return -1;
     }
 
@@ -196,13 +220,17 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     public void remove(int index) {
-        if (count == 1) {
-            head = null;
-            count = 0;
-            return;
+
+        if (head == null) {
+            throw new IllegalStateException("Список пуст");
+        }
+
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Невозможный индекс!");
         }
 
         Node nodeToRemove = getNode(index);
+
         Node prevNode = nodeToRemove.prev;
         Node nextNode = nodeToRemove.next;
 
@@ -217,7 +245,28 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     @Override
-    public Iterator<Point> iterator(){
-        throw new UnsupportedOperationException("Итератор не поддерживается.");
+    public Iterator<Point> iterator() {
+        return new Iterator<Point>() {
+            private Node curNode = head;
+            private int elementsRet = 0;
+
+            @Override
+            public boolean hasNext() {
+                return elementsRet < count;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("Итератор не поддерживается.");
+                }
+
+                Point point = new Point(curNode.x, curNode.y);
+                curNode = curNode.next;
+                elementsRet++;
+
+                return point;
+            }
+        };
     }
 }
