@@ -9,5 +9,4 @@ public class LinkedListTabulatedFunctionFactory implements TabulatedFunctionFact
     public TabulatedFunction create(double[] xValues, double[] yValues) {
         return new LinkedListTabulatedFunction(xValues, yValues);
     }
-
 }
