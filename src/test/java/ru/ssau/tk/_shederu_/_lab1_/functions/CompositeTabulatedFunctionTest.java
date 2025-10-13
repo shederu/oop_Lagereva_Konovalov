@@ -18,10 +18,10 @@ public class CompositeTabulatedFunctionTest {
 
         MathFunctions composition = inner.andThen(outer);
 
-        assertEquals(6.536, composition.apply(-3.2), delta);
-        assertEquals(24.0, composition.apply(12), delta);
-        assertEquals(612.0, composition.apply(110), delta);
-        assertEquals(-7.315, composition.apply(-22), delta);
+        assertEquals(12.578, composition.apply(5.0), delta);
+        assertEquals(11.842, composition.apply(4.0), delta);
+        assertEquals(12.0, composition.apply(10.0), delta);
+        assertEquals(6.0, composition.apply(9.0), delta);
     }
 
     @Test
