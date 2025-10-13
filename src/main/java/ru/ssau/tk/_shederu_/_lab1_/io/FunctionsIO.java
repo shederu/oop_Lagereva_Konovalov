@@ -1,6 +1,7 @@
 package ru.ssau.tk._shederu_._lab1_.io;
 
 import ru.ssau.tk._shederu_._lab1_.functions.TabulatedFunction;
+import ru.ssau.tk._shederu_._lab1_.functions.factory.TabulatedFunctionFactory;
 
 import java.io.*;
 
@@ -21,4 +22,22 @@ public class FunctionsIO {
         }
         printWriter.flush();
     }
+
+    public static TabulatedFunction readTabulatedFunction(BufferedInputStream inputStream, TabulatedFunctionFactory factory) throws IOException {
+
+        DataInputStream dataStream = new DataInputStream(inputStream);
+
+        int size = dataStream.readInt();
+
+        double[] xValues = new double[size];
+        double[] yValues = new double[size];
+
+        for (int i = 0; i < size; i++) {
+            xValues[i] = dataStream.readDouble();
+            yValues[i] = dataStream.readDouble();
+        }
+
+        return factory.create(xValues, yValues);
+    }
+
 }
