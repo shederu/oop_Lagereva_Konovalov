@@ -3,6 +3,7 @@ package ru.ssau.tk._shederu_._lab1_.io;
 import ru.ssau.tk._shederu_._lab1_.functions.LinkedListTabulatedFunction;
 import ru.ssau.tk._shederu_._lab1_.functions.TabulatedFunction;
 import ru.ssau.tk._shederu_._lab1_.operations.TabulatedDifferentialOperator;
+import ru.ssau.tk._shederu_._lab1_.functions.factory.LinkedListTabulatedFunctionFactory;
 import java.io.*;
 
 public class LinkedListTabulatedFunctionSerialization {
@@ -12,7 +13,7 @@ public class LinkedListTabulatedFunctionSerialization {
         double[] yValues = {0.0, 1.0, 4.0, 9.0, 16.0};
         LinkedListTabulatedFunction originalFunction = new LinkedListTabulatedFunction(xValues, yValues);
 
-        TabulatedDifferentialOperator differentialOperator = new TabulatedDifferentialOperator();
+        TabulatedDifferentialOperator differentialOperator = new TabulatedDifferentialOperator(new LinkedListTabulatedFunctionFactory());
 
         TabulatedFunction firstDerivative = differentialOperator.derive(originalFunction);
         TabulatedFunction secondDerivative = differentialOperator.derive(firstDerivative);
@@ -24,7 +25,6 @@ public class LinkedListTabulatedFunctionSerialization {
             FunctionsIO.serialize(bufferedOutputStream, firstDerivative);
             FunctionsIO.serialize(bufferedOutputStream, secondDerivative);
 
-            System.out.println("Функции успешно сериализованы в файл");
 
         } catch (IOException e) {
             e.printStackTrace();
