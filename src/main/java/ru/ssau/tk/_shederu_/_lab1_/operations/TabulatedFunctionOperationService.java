@@ -70,8 +70,7 @@ public class TabulatedFunctionOperationService {
             double xB = pointsB[i].x;
 
             if (xA != xB) {
-                throw new InconsistentFunctionsException(
-                        "X не совпадают!");
+                throw new InconsistentFunctionsException("X не совпадают!");
             }
 
             xValues[i] = xA;
@@ -89,7 +88,6 @@ public class TabulatedFunctionOperationService {
         return doOperation(a, b, (u, v) -> u - v);
     }
 
-
     public TabulatedFunction multiply(TabulatedFunction a, TabulatedFunction b) {
         return doOperation(a, b, (u, v) -> u * v);
     }
@@ -102,5 +100,4 @@ public class TabulatedFunctionOperationService {
             return u / v;
         });
     }
-
 }
