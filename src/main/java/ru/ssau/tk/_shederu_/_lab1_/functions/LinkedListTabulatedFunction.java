@@ -2,15 +2,19 @@ package ru.ssau.tk._shederu_._lab1_.functions;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
-import ru.ssau.tk._shederu_._lab1_.exceptions.DifferentLengthOfArraysException;
+import java.io.Serializable;
+import java.io.Serial;
 
-import java.util.Iterator;
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, TabulatedFunction, Serializable {
+    private final double eRate = 1e-9;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, TabulatedFunction {
-    private final double eRate = 1e-10;
 
-    private static class Node{
+    @Serial
+    private static final long serialVersionUID = -6743567631108323096L;
+
+    private static class Node implements Serializable {
+        @Serial
+        private static final long serialVersionUID = 3381324567890123456L;
         private Node next;
         private Node prev;
         private double x;
@@ -21,6 +25,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             this.y = y;
         }
     }
+
 
     private Node head = null;
     private int count = 0;
