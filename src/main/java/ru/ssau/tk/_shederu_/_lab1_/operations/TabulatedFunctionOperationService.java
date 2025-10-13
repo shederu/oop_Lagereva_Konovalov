@@ -88,4 +88,19 @@ public class TabulatedFunctionOperationService {
     public TabulatedFunction subtract(TabulatedFunction a, TabulatedFunction b) {
         return doOperation(a, b, (u, v) -> u - v);
     }
+
+
+    public TabulatedFunction multiply(TabulatedFunction a, TabulatedFunction b) {
+        return doOperation(a, b, (u, v) -> u * v);
+    }
+
+    public TabulatedFunction divide(TabulatedFunction a, TabulatedFunction b) {
+        return doOperation(a, b, (u, v) -> {
+            if (v == 0.0) {
+                throw new ArithmeticException("Деление на ноль");
+            }
+            return u / v;
+        });
+    }
+
 }
