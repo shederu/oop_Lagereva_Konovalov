@@ -1,5 +1,9 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
+import ru.ssau.tk._shederu_._lab1_.exceptions.NoSuchElementException;
+
+import java.util.Iterator;
+
 public class MockTabulatedFunction extends AbstractTabulatedFunction{
     private final double x0;
     private final double x1;
@@ -85,5 +89,20 @@ public class MockTabulatedFunction extends AbstractTabulatedFunction{
             return 1;
         }
         return -1;
+    }
+
+    @Override
+    public Iterator<Point> iterator() {
+        return new Iterator<Point>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public Point next() {
+                throw new NoSuchElementException();
+            }
+        };
     }
 }

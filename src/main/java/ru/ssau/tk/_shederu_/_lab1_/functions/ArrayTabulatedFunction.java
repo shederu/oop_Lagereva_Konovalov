@@ -1,6 +1,7 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
 import ru.ssau.tk._shederu_._lab1_.exceptions.ArrayIsNotSortedException;
+import ru.ssau.tk._shederu_._lab1_.exceptions.NoSuchElementException;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -214,6 +215,23 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     public Iterator<Point> iterator(){
-        throw new UnsupportedOperationException("Итератор не поддерживается.");
+        return new Iterator<Point>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < count;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("Элементы закончились");
+                }
+                Point point = new Point(xValues[index], yValues[index]);
+                index++;
+                return point;
+            }
+        };
     }
 }
