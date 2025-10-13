@@ -19,7 +19,7 @@ class TabulatedFunctionOperationServiceTest {
     void asPointsCorrectArray() {
         double[] xValues = {1.0, 2.0, 3.0, 4.0};
         double[] yValues = {3.0, 4.0, 6.0, 8.0};
-        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues,yValues);
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
         Point[] result = TabulatedFunctionOperationService.asPoints(function);
         assertEquals(4, result.length);
         assertEquals(new Point(1.0, 3.0).x, result[0].x);
@@ -31,8 +31,11 @@ class TabulatedFunctionOperationServiceTest {
         assertEquals(new Point(4.0, 8.0).x, result[3].x);
         assertEquals(new Point(4.0, 8.0).y, result[3].y);
 
-        assertThrows(NullPointerException.class, ()-> { TabulatedFunctionOperationService.asPoints(null);});
+        assertThrows(NullPointerException.class, () -> {
+            TabulatedFunctionOperationService.asPoints(null);
+        });
     }
+
     @Test
     void testConstructorWithFactory() {
         TabulatedFunctionFactory factory = new LinkedListTabulatedFunctionFactory();
@@ -143,7 +146,9 @@ class TabulatedFunctionOperationServiceTest {
         TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
         TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
 
-        assertThrows(InconsistentFunctionsException.class, () -> {service.add(function1, function2);});
+        assertThrows(InconsistentFunctionsException.class, () -> {
+            service.add(function1, function2);
+        });
     }
 
     @Test
@@ -242,5 +247,218 @@ class TabulatedFunctionOperationServiceTest {
         assertEquals(2.0, subtractResult.getY(1), eRate);
         assertEquals(3.0, subtractResult.getY(2), eRate);
     }
+
+    @Test
+    void testMultiply() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {2.0, 3.0, 4.0};
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {5.0, 6.0, 7.0};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.multiply(function1, function2);
+
+        assertEquals(3, result.getCount());
+        assertEquals(10.0, result.getY(0), eRate);
+        assertEquals(18.0, result.getY(1), eRate);
+        assertEquals(28.0, result.getY(2), eRate);
+    }
+
+    @Test
+    void testMultiplyWithLinkedListFactory() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService(new LinkedListTabulatedFunctionFactory());
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {1.0, 2.0, 3.0};
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {4.0, 5.0, 6.0};
+
+        TabulatedFunction function1 = new LinkedListTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new LinkedListTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.multiply(function1, function2);
+
+        assertTrue(result instanceof LinkedListTabulatedFunction);
+        assertEquals(4.0, result.getY(0), eRate);
+        assertEquals(10.0, result.getY(1), eRate);
+        assertEquals(18.0, result.getY(2), eRate);
+    }
+
+    @Test
+    void testMultiplyWithDifferentXValues() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {2.0, 3.0, 4.0};
+        double[] xValues2 = {1.0, 2.5, 3.0};
+        double[] yValues2 = {5.0, 6.0, 7.0};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        assertThrows(InconsistentFunctionsException.class, () -> {
+            service.multiply(function1, function2);
+        });
+    }
+
+    @Test
+    void testMultiplyWithDifferentCount() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {2.0, 3.0, 4.0};
+        double[] xValues2 = {1.0, 2.0};
+        double[] yValues2 = {5.0, 6.0};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        assertThrows(InconsistentFunctionsException.class, () -> {
+            service.multiply(function1, function2);
+        });
+    }
+
+    @Test
+    void testMultiplyWithNullFunctions() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        TabulatedFunction function = new ArrayTabulatedFunction(new double[]{1.0, 2.0}, new double[]{1.0, 2.0});
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.multiply(null, function);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.multiply(function, null);
+        });
+    }
+
+    @Test
+    void testDivide() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {2.0, 4.0, 5.0};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.divide(function1, function2);
+
+
+        assertEquals(3, result.getCount());
+        assertEquals(5.0, result.getY(0), eRate);
+        assertEquals(5.0, result.getY(1), eRate);
+        assertEquals(6.0, result.getY(2), eRate);
+    }
+
+    @Test
+    void testDivideWithLinkedListFactory() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService(new LinkedListTabulatedFunctionFactory());
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {8.0, 12.0, 18.0};
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {2.0, 3.0, 6.0};
+
+        TabulatedFunction function1 = new LinkedListTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new LinkedListTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.divide(function1, function2);
+
+        assertTrue(result instanceof LinkedListTabulatedFunction);
+        assertEquals(4.0, result.getY(0), eRate);
+        assertEquals(4.0, result.getY(1), eRate);
+        assertEquals(3.0, result.getY(2), eRate);
+    }
+
+    @Test
+    void testDivideByZero() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {2.0, 0.0, 5.0};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        assertThrows(ArithmeticException.class, () -> {
+            service.divide(function1, function2);
+        });
+    }
+
+    @Test
+    void testDivideWithDifferentXValues() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        double[] xValues2 = {1.0, 2.1, 3.0};
+        double[] yValues2 = {2.0, 4.0, 5.0};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        assertThrows(InconsistentFunctionsException.class, () -> {
+            service.divide(function1, function2);
+        });
+    }
+
+    @Test
+    void testDivideWithNegativeValues() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {-10.0, 20.0, -30.0};
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {2.0, -4.0, 5.0};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.divide(function1, function2);
+
+        assertEquals(-5.0, result.getY(0), eRate);
+        assertEquals(-5.0, result.getY(1), eRate);
+        assertEquals(-6.0, result.getY(2), eRate);
+    }
+
+    @Test
+    void testDivideWithDecimalValues() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {0.5, 1.0, 1.5};
+        double[] yValues1 = {1.5, 2.5, 3.5};
+        double[] xValues2 = {0.5, 1.0, 1.5};
+        double[] yValues2 = {0.5, 1.0, 1.5};
+
+        TabulatedFunction function1 = new ArrayTabulatedFunction(xValues1, yValues1);
+        TabulatedFunction function2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.divide(function1, function2);
+
+        assertEquals(3.0, result.getY(0), eRate);
+        assertEquals(2.5, result.getY(1), eRate);
+        assertEquals(2.333333333, result.getY(2), eRate);
+    }
+
+    @Test
+    void testMixedFunctionTypesForXOperations() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues1 = {2.0, 4.0, 6.0};
+        double[] yValues2 = {1.0, 2.0, 3.0};
+
+    }
 }
+
 
