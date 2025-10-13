@@ -23,6 +23,19 @@ public class FunctionsIO {
         printWriter.flush();
     }
 
+    public static void writeTabulatedFunction(BufferedOutputStream outputStream, TabulatedFunction function) throws IOException {
+        try (DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
+            dataOutputStream.writeInt(function.getCount());
+
+            for (int i = 0; i < function.getCount(); i++) {
+                dataOutputStream.writeDouble(function.getX(i));
+                dataOutputStream.writeDouble(function.getY(i));
+            }
+
+            dataOutputStream.flush();
+        }
+    }
+
     public static TabulatedFunction readTabulatedFunction(BufferedInputStream inputStream, TabulatedFunctionFactory factory) throws IOException {
 
         DataInputStream dataStream = new DataInputStream(inputStream);
