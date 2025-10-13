@@ -4,6 +4,9 @@ import ru.ssau.tk._shederu_._lab1_.functions.TabulatedFunction;
 import ru.ssau.tk._shederu_._lab1_.functions.factory.TabulatedFunctionFactory;
 
 import java.io.*;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 public class FunctionsIO {
     private FunctionsIO() {
@@ -63,5 +66,30 @@ public class FunctionsIO {
         ObjectOutputStream objectStream = new ObjectOutputStream(stream);
         objectStream.writeObject(function);
         objectStream.flush();
+    }
+
+    public static TabulatedFunction readTabulatedFunction(BufferedReader reader, TabulatedFunctionFactory factory) throws IOException {
+        try {
+            String line = reader.readLine();
+            int count = Integer.parseInt(line);
+
+            double[] xValues = new double[count];
+            double[] yValues = new double[count];
+
+            NumberFormat formatter = NumberFormat.getInstance(Locale.forLanguageTag("ru"));
+
+            for (int i = 0; i < count; i++) {
+                line = reader.readLine();
+                String[] parts = line.split(" ");
+
+                xValues[i] = formatter.parse(parts[0]).doubleValue();
+                yValues[i] = formatter.parse(parts[1]).doubleValue();
+            }
+
+            return factory.create(xValues, yValues);
+
+        } catch (ParseException e) {
+            throw new IOException(e);
+        }
     }
 }

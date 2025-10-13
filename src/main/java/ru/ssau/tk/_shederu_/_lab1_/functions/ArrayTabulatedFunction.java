@@ -5,11 +5,14 @@ import ru.ssau.tk._shederu_._lab1_.exceptions.NoSuchElementException;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.io.Serializable;
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, TabulatedFunction{
     private  double[] xValues;
     private  double[] yValues;
     private  int count;
+
+    private static final long serialVersionUID = 1L;
 
     public ArrayTabulatedFunction(double[] xValues, double[] yValues){
 
