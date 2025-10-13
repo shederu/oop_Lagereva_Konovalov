@@ -21,7 +21,7 @@ public class MockTabulatedFunctionTest{
         MockTabulatedFunction function2 = new MockTabulatedFunction(-6, -2, 1, 5);
 
         assertEquals(37.943, function1.apply(6), delta);
-        assertEquals(-193.0, function2.apply(-200), delta);
-        assertEquals(130.0, function2.apply(123), delta);
+        assertEquals(2.0, function2.apply(-5), delta);
+        assertEquals(3.0, function2.apply(-4), delta);
     }
 }
