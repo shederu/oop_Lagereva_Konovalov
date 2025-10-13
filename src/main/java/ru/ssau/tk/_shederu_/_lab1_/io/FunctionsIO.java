@@ -59,4 +59,9 @@ public class FunctionsIO {
         return (TabulatedFunction) objectInputStream.readObject();
     }
 
+    public static void serialize(BufferedOutputStream stream, TabulatedFunction function) throws IOException {
+        ObjectOutputStream objectStream = new ObjectOutputStream(stream);
+        objectStream.writeObject(function);
+        objectStream.flush();
+    }
 }
