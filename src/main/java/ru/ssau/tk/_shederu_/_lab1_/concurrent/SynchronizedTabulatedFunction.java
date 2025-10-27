@@ -62,11 +62,32 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
 
     @Override
     public synchronized Iterator<Point> iterator() {
-        Point[] points = new Point[function.getCount()];
+        Point[] pointsCopy = new Point[function.getCount()];
         for (int i = 0; i < function.getCount(); i++) {
-            points[i] = new Point(function.getX(i), function.getY(i));
+            pointsCopy[i] = new Point(function.getX(i), function.getY(i));
         }
-        return java.util.Arrays.asList(points).iterator();
+
+        return new Iterator<Point>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex < pointsCopy.length;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                return pointsCopy[currentIndex++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException("Remove operation is not supported");
+            }
+        };
     }
 
     public synchronized <T> T doSynchronously(Operation<T> operation) {
