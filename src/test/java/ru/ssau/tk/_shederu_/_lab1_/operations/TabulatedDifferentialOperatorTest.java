@@ -1,6 +1,7 @@
 package ru.ssau.tk._shederu_._lab1_.operations;
 
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk._shederu_._lab1_.concurrent.SynchronizedTabulatedFunction;
 import ru.ssau.tk._shederu_._lab1_.functions.*;
 import ru.ssau.tk._shederu_._lab1_.functions.factory.ArrayTabulatedFunctionFactory;
 import ru.ssau.tk._shederu_._lab1_.functions.factory.LinkedListTabulatedFunctionFactory;
@@ -171,5 +172,60 @@ class TabulatedDifferentialOperatorTest {
         operator.setFactory(newFactory);
 
         assertSame(newFactory, operator.getFactory());
+    }
+
+    @Test
+    void testDeriveSynchronouslyWithRegularFunction() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        double[] xValues = {0, 1, 2, 3, 4};
+        double[] yValues = {0, 1, 4, 9, 16}; // y = x^2
+        TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        TabulatedFunction derivative = operator.deriveSynchronously(function);
+
+        assertEquals(5, derivative.getCount());
+        assertEquals(1.0, derivative.getY(0), 1e-9); // производная в x=0: (1-0)/1 = 1
+        assertEquals(3.0, derivative.getY(1), 1e-9); // производная в x=1: (4-1)/1 = 3
+        assertEquals(5.0, derivative.getY(2), 1e-9); // производная в x=2: (9-4)/1 = 5
+    }
+
+    @Test
+    void testDeriveSynchronouslyWithSynchronizedFunction() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        double[] xValues = {0, 2, 4, 6};
+        double[] yValues = {0, 4, 16, 36};
+        TabulatedFunction baseFunction = new ArrayTabulatedFunction(xValues, yValues);
+        SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(baseFunction);
+
+        TabulatedFunction derivative = operator.deriveSynchronously(syncFunction);
+
+
+        assertEquals(4, derivative.getCount());
+        assertEquals(2.0, derivative.getY(0), 1e-9); // (4-0)/(2-0) = 2.0
+        assertEquals(6.0, derivative.getY(1), 1e-9); // (16-4)/(4-2) = 6.0
+        assertEquals(10.0, derivative.getY(2), 1e-9); // (36-16)/(6-4) = 10.0
+        assertEquals(10.0, derivative.getY(3), 1e-9); // последняя точка: (36-16)/(6-4) = 10.0
+    }
+
+    @Test
+    void testDeriveSynchronouslyWithLinearFunction() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        // Линейная функция y = 2x + 1
+        double[] xValues = {0, 1, 2, 3, 4};
+        double[] yValues = {1, 3, 5, 7, 9};
+        TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        TabulatedFunction derivative = operator.deriveSynchronously(function);
+
+        // Производная линейной функции должна быть постоянной
+        assertEquals(5, derivative.getCount());
+        assertEquals(2.0, derivative.getY(0), 1e-9); // (3-1)/1 = 2
+        assertEquals(2.0, derivative.getY(1), 1e-9); // (5-3)/1 = 2
+        assertEquals(2.0, derivative.getY(2), 1e-9); // (7-5)/1 = 2
+        assertEquals(2.0, derivative.getY(3), 1e-9); // (9-7)/1 = 2
+        assertEquals(2.0, derivative.getY(4), 1e-9); // (9-7)/1 = 2
     }
 }
