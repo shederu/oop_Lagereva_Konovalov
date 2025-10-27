@@ -3,6 +3,8 @@ package ru.ssau.tk._shederu_._lab1_.concurrent;
 import org.junit.jupiter.api.Test;
 import ru.ssau.tk._shederu_._lab1_.functions.*;
 
+import java.util.Iterator;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SynchronizedTabulatedFunctionTest {
@@ -129,4 +131,92 @@ class SynchronizedTabulatedFunctionTest {
         double interpolated = syncFunction.apply(2.5);
         assertTrue(interpolated >= 4.0 && interpolated <= 9.0);
     }
+
+    @Test
+    void testIteratorWithArray() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        TabulatedFunction innerFunction = new ArrayTabulatedFunction(xValues, yValues);
+        SynchronizedTabulatedFunction synchronizedFunction = new SynchronizedTabulatedFunction(innerFunction);
+
+        Iterator<Point> iterator = synchronizedFunction.iterator();
+
+        assertTrue(iterator.hasNext());
+
+        Point point1 = iterator.next();
+        assertEquals(1.0, point1.x, delta);
+        assertEquals(10.0, point1.y, delta);
+
+        Point point2 = iterator.next();
+        assertEquals(2.0, point2.x, delta);
+        assertEquals(20.0, point2.y, delta);
+
+        Point point3 = iterator.next();
+        assertEquals(3.0, point3.x, delta);
+        assertEquals(30.0, point3.y, delta);
+
+        Point point4 = iterator.next();
+        assertEquals(4.0, point4.x, delta);
+        assertEquals(40.0, point4.y, delta);
+
+        assertFalse(iterator.hasNext());
+    }
+
+    @Test
+    void testIteratorWithList() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        TabulatedFunction innerFunction = new LinkedListTabulatedFunction(xValues, yValues);
+        SynchronizedTabulatedFunction synchronizedFunction = new SynchronizedTabulatedFunction(innerFunction);
+
+        Iterator<Point> iterator = synchronizedFunction.iterator();
+
+        assertTrue(iterator.hasNext());
+        Point point1 = iterator.next();
+        assertEquals(1.0, point1.x, delta);
+        assertEquals(10.0, point1.y, delta);
+
+        Point point2 = iterator.next();
+        assertEquals(2.0, point2.x, delta);
+        assertEquals(20.0, point2.y, delta);
+
+        Point point3 = iterator.next();
+        assertEquals(3.0, point3.x, delta);
+        assertEquals(30.0, point3.y, delta);
+
+        assertFalse(iterator.hasNext());
+    }
+
+    @Test
+    void testIteratorWithNegativeValues() {
+        double[] xValues = {-2.0, -1.0, 0.0, 1.0, 2.0};
+        double[] yValues = {-20.0, -10.0, 0.0, 10.0, 20.0};
+        TabulatedFunction innerFunction = new ArrayTabulatedFunction(xValues, yValues);
+        SynchronizedTabulatedFunction synchronizedFunction = new SynchronizedTabulatedFunction(innerFunction);
+
+        Iterator<Point> iterator = synchronizedFunction.iterator();
+
+        Point point1 = iterator.next();
+        assertEquals(-2.0, point1.x, delta);
+        assertEquals(-20.0, point1.y, delta);
+
+        Point point2 = iterator.next();
+        assertEquals(-1.0, point2.x, delta);
+        assertEquals(-10.0, point2.y, delta);
+
+        Point point3 = iterator.next();
+        assertEquals(0.0, point3.x, delta);
+        assertEquals(0.0, point3.y, delta);
+
+        Point point4 = iterator.next();
+        assertEquals(1.0, point4.x, delta);
+        assertEquals(10.0, point4.y, delta);
+
+        Point point5 = iterator.next();
+        assertEquals(2.0, point5.x, delta);
+        assertEquals(20.0, point5.y, delta);
+
+        assertFalse(iterator.hasNext());
+    }
+
 }
