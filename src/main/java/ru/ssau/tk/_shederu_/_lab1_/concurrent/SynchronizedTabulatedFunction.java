@@ -70,11 +70,11 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
     }
 
     public synchronized <T> T doSynchronously(Operation<T> operation) {
-        return operation.apply(function);
+        return operation.apply(this);
     }
 
     @FunctionalInterface
     public interface Operation<T> {
-        T apply(TabulatedFunction function);
+        T apply(SynchronizedTabulatedFunction function);
     }
 }
