@@ -1,5 +1,6 @@
 package ru.ssau.tk._shederu_._lab1_.operations;
 
+import ru.ssau.tk._shederu_._lab1_.concurrent.SynchronizedTabulatedFunction;
 import ru.ssau.tk._shederu_._lab1_.functions.*;
 import ru.ssau.tk._shederu_._lab1_.functions.factory.TabulatedFunctionFactory;
 import ru.ssau.tk._shederu_._lab1_.functions.factory.ArrayTabulatedFunctionFactory;
@@ -26,6 +27,18 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
 
     public void setFactory(TabulatedFunctionFactory factory) {
         this.factory = factory;
+    }
+
+    public TabulatedFunction deriveSynchronously(TabulatedFunction function) {
+        SynchronizedTabulatedFunction syncFunction;
+
+        if (function instanceof SynchronizedTabulatedFunction) {
+            syncFunction = (SynchronizedTabulatedFunction) function;
+        } else {
+            syncFunction = new SynchronizedTabulatedFunction(function);
+        }
+
+        return syncFunction.doSynchronously(this::derive);
     }
 
     @Override
