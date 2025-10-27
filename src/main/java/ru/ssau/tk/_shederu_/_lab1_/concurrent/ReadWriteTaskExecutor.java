@@ -23,7 +23,6 @@ public class ReadWriteTaskExecutor {
         writeThread.start();
 
         try {
-            // Ждем завершения потоков
             readThread.join();
             writeThread.join();
         } catch (InterruptedException e) {
