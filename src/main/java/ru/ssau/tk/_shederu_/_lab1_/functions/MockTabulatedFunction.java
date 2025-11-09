@@ -1,23 +1,32 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk._shederu_._lab1_.exceptions.NoSuchElementException;
 
 import java.util.Iterator;
 
 public class MockTabulatedFunction extends AbstractTabulatedFunction{
+    private static final Logger logger = LoggerFactory.getLogger(MockTabulatedFunction.class);
     private final double x0;
     private final double x1;
     private double y0;
     private double y1;
 
     public MockTabulatedFunction(double x0, double x1, double y0, double y1){
+        logger.debug("Создание MockTabulatedFunction: x0={}, x1={}, y0={}, y1={}", x0, x1, y0, y1);
+
         if (x0 >= x1){
+            logger.error("Некорректные границы: x0={} >= x1={}", x0, x1);
             throw new IllegalArgumentException("x0 должен быть меньше x1.");
         }
+
         this.x0 = x0;
         this.x1 = x1;
         this.y0 = y0;
         this.y1 = y1;
+
+        logger.info("MockTabulatedFunction создан: диапазон=[{}, {}], значения=[{}, {}]", x0, x1, y0, y1);
     }
 
     protected int floorIndexOfX(double x){
@@ -93,6 +102,7 @@ public class MockTabulatedFunction extends AbstractTabulatedFunction{
 
     @Override
     public Iterator<Point> iterator() {
+        logger.trace("iterator() вызван");
         return new Iterator<Point>() {
             @Override
             public boolean hasNext() {
@@ -101,6 +111,7 @@ public class MockTabulatedFunction extends AbstractTabulatedFunction{
 
             @Override
             public Point next() {
+                logger.warn("Попытка вызова next() у пустого итератора");
                 throw new NoSuchElementException();
             }
         };

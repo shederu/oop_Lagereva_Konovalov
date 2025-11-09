@@ -1,13 +1,16 @@
 package ru.ssau.tk._shederu_._lab1_.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.io.Serializable;
 import java.io.Serial;
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, TabulatedFunction, Serializable {
+    private static final Logger logger = LoggerFactory.getLogger(LinkedListTabulatedFunction.class);
     private final double eRate = 1e-9;
-
 
     @Serial
     private static final long serialVersionUID = -6743567631108323096L;
@@ -26,17 +29,19 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
     }
 
-
     private Node head = null;
     private int count = 0;
 
-
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {
+        logger.debug("Создание LinkedListTabulatedFunction из массивов: xValues.length={}, yValues.length={}", xValues.length, yValues.length);
+
         if (xValues.length < 2) {
+            logger.error("Недостаточно точек: {}", xValues.length);
             throw new IllegalArgumentException("Длина таблицы должна быть не менее 2 точек");
         }
 
         if (xValues.length != yValues.length) {
+            logger.error("Несовпадение размеров массивов");
             throw new IllegalArgumentException("Длина массивов должна быть одинакова.");
         }
 
@@ -45,8 +50,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
         }
+        logger.info("LinkedListTabulatedFunction создан: {} точек, диапазон=[{}, {}]", count, leftBound(), rightBound());
     }
-
 
     private void addNode(double x, double y) {
         Node newNode = new Node(x, y);
@@ -67,30 +72,40 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     public LinkedListTabulatedFunction(MathFunctions source, double xFrom, double xTo, int count) {
+        logger.debug("Создание LinkedListTabulatedFunction из функции: source={}, xFrom={}, xTo={}, count={}", source.getClass().getSimpleName(), xFrom, xTo, count);
+
         if (count < 2) {
+            logger.error("Недостаточно точек");
             throw new IllegalArgumentException("Количество точек должно быть не менее 2");
         }
 
         if (xFrom > xTo) {
+            logger.debug("Корректировка границ");
             double temp = xFrom;
             xFrom = xTo;
             xTo = temp;
         }
 
         if (xFrom == xTo) {
+            logger.debug("Границы равны");
             double yValue = source.apply(xFrom);
             for (int i = 0; i < count; i++) {
                 addNode(xFrom, yValue);
             }
         } else {
             double step = (xTo - xFrom) / (count - 1);
+            logger.trace("Шаг дискретизации: {}", step);
             for (int i = 0; i < count; i++) {
                 double x = xFrom + i * step;
                 double y = source.apply(x);
                 addNode(x, y);
+                logger.trace("Добавлена точка {}: x={}, y={}", i, x, y);
             }
         }
+        logger.info("LinkedListTabulatedFunction создан: {} точек, диапазон=[{}, {}], функция={}", count, leftBound(), rightBound(), source.getClass().getSimpleName());
     }
+
+
     private Node getNode(int index) {
         if (index < 0 || index >= count) {
             throw new IndexOutOfBoundsException("Индекс: " + index + ", Размер: " + count);
@@ -225,16 +240,20 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     public void remove(int index) {
+        logger.debug("remove({})", index);
 
         if (head == null) {
+            logger.error("Попытка удаления из пустого списка");
             throw new IllegalStateException("Список пуст");
         }
 
         if (index < 0 || index >= count) {
+            logger.error("Некорректный индекс для удаления: {}", index);
             throw new IndexOutOfBoundsException("Невозможный индекс!");
         }
 
         Node nodeToRemove = getNode(index);
+        logger.debug("Удаление узла: index={}, x={}, y={}", index, nodeToRemove.x, nodeToRemove.y);
 
         Node prevNode = nodeToRemove.prev;
         Node nextNode = nodeToRemove.next;
@@ -244,9 +263,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
         if (nodeToRemove == head) {
             head = nextNode;
+            logger.debug("Головной узел изменен");
         }
 
         count--;
+        logger.debug("Узел удален. Новое количество: {}", count);
     }
 
     @Override
