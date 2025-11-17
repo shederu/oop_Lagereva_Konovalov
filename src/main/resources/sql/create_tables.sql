@@ -13,6 +13,7 @@ CREATE TABLE tabulated_function (
     derivative BYTEA NOT NULL
 );
 
+*/гении
 CREATE TABLE composite_function (
     id BIGSERIAL PRIMARY KEY,
     expression TEXT NOT NULL
