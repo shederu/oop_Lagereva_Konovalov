@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="afd16bdf-f58d-4278-9bd1-70e6c2ddbf75" name="Changes" comment="анекдот" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JUnit4 Test Class" />
+        <option value="JUnit5 Test Class" />
+        <option value="Class" />
+        <option value="JUnit3 Test Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="lab-4.75" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;bulatsn&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/shederu/oop_Lagereva_Konovalov&quot;,
+    &quot;accountId&quot;: &quot;f788a29d-7320-4094-b5af-88aa5989a468&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="333rEh1TT3hIC742LNMPGcrYlQf" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Application.HelloWorld.executor": "Coverage",
+    "Downloaded.Files.Path.Enabled": "false",
+    "JUnit.CompositeFunctionTest.executor": "Coverage",
+    "JUnit.ConstantFunctionTest.executor": "Profiler#1",
+    "JUnit.IdentityFunctionTest.executor": "Coverage",
+    "JUnit.RungeCuteTest.executor": "Coverage",
+    "JUnit.SqrFunctionTest.executor": "Coverage",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit3",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit3": "junit.framework.TestCase",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit4": "",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.includeInheritedMembers": "true",
+    "create.test.in.the.same.root": "true",
+    "git-widget-placeholder": "lab-4.75",
+    "kotlin-language-version-configured": "true",
+    "last_directory_selection": "C:/Users/User/IdeaProjects/oop_Lagereva_Konovalov/src/test/java/ru/ssau/tk/_shederu_/_lab1_/functions",
+    "last_opened_file_path": "C:/Users/User/IdeaProjects/oop_Lagereva_Konovalov",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="junit.framework.TestCase" />
+      <recent name="" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="ru.ssau.tk._shederu_._lab1_.functions" />
+      <recent name="functions" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="oop_Lagereva_Konovalov" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="oop_Lagereva_Konovalov" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="afd16bdf-f58d-4278-9bd1-70e6c2ddbf75" name="Changes" comment="" />
+      <created>1758556486715</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1758556486715</updated>
+    </task>
+    <task id="LOCAL-00001" summary="4">
+      <option name="closed" value="true" />
+      <created>1758556535202</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1758556535202</updated>
+    </task>
+    <task id="LOCAL-00002" summary="41">
+      <option name="closed" value="true" />
+      <created>1758556686295</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1758556686295</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Первый шаг сделал, че-т я устал, давай сама дальше">
+      <option name="closed" value="true" />
+      <created>1758731257485</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1758731257485</updated>
+    </task>
+    <task id="LOCAL-00004" summary="идетити фукшон">
+      <option name="closed" value="true" />
+      <created>1758897270415</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1758897270415</updated>
+    </task>
+    <task id="LOCAL-00005" summary="лови">
+      <option name="closed" value="true" />
+      <created>1758992596228</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1758992596228</updated>
+    </task>
+    <task id="LOCAL-00006" summary="затесть, пж">
+      <option name="closed" value="true" />
+      <created>1759052822079</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1759052822079</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Хватит спать, у меня ничего не работает(((">
+      <option name="closed" value="true" />
+      <created>1759069729265</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1759069729265</updated>
+    </task>
+    <task id="LOCAL-00008" summary="попробуй">
+      <option name="closed" value="true" />
+      <created>1759072231135</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1759072231135</updated>
+    </task>
+    <task id="LOCAL-00009" summary="анекдот">
+      <option name="closed" value="true" />
+      <created>1759073535272</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1759073535272</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="4" />
+    <MESSAGE value="41" />
+    <MESSAGE value="Первый шаг сделал, че-т я устал, давай сама дальше" />
+    <MESSAGE value="идетити фукшон" />
+    <MESSAGE value="лови" />
+    <MESSAGE value="затесть, пж" />
+    <MESSAGE value="Хватит спать, у меня ничего не работает(((" />
+    <MESSAGE value="попробуй" />
+    <MESSAGE value="анекдот" />
+    <option name="LAST_COMMIT_MESSAGE" value="анекдот" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/oop_Lagereva_Konovalov$HelloWorld.ic" NAME="HelloWorld Coverage Results" MODIFIED="1758891883858" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>ru.ssau.tk._shederu_._lab1_.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/oop_Lagereva_Konovalov$RungeCuteTest.ic" NAME="RungeCuteTest Coverage Results" MODIFIED="1763225056146" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>ru.ssau.tk._shederu_._lab1_.functions.*</FILTER>
+    </SUITE>
+  </component>
+</project>
