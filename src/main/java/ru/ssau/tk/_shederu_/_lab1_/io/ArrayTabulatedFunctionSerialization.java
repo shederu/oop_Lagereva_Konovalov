@@ -57,7 +57,7 @@ public class ArrayTabulatedFunctionSerialization {
                     deserializedSecondDerivative.getCount() == secondDerivative.getCount()) {
                 logger.info("Десериализация прошла успешно - размеры функций совпадают");
             } else {
-                logger.warn("Размеры десериализованных функций не совпадают с оригиналом");
+                logger.warn("Размеры десериализованных функций не совпадают с оригиналомб");
             }
 
             System.out.println("\nИсходная функция:");
