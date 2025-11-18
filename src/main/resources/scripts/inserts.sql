@@ -1,10 +1,6 @@
-INSERT INTO "user" (login, password) VALUES (?, ?);
+ INTO "user" (login, password) VALUES (?, ?);
 
-INSERT INTO tabulated_function (name, data, derivative) VALUES (?, ?, ?);
+INSERT INTO tabulated_function (name, data, derivative, user_id) VALUES (?, ?, ?, ?);
 
-INSERT INTO composite_function (expression) VALUES (?);
-
-
-INSERT INTO "user" (login, password)
-VALUES ('test_user', 'test_pass');
+INSERT INTO composite_function (expression, user_id) VALUES (?, ?);
 
