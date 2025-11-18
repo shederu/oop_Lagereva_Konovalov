@@ -12,18 +12,22 @@ public class CompositeFunctionDto {
     }
 
     public Long getId() {
+
         return id;
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
     public String getExpression() {
+
         return expression;
     }
 
     public void setExpression(String expression) {
+
         this.expression = expression;
     }
 }
