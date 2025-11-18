@@ -17,52 +17,71 @@ public class TabulatedFunctionEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BYTEA")
     private byte[] data;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BYTEA")
     private byte[] derivative;
 
-    public TabulatedFunctionEntity(String name, byte[] data, byte[] derivative) {
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private UserEntity user;
+
+    public TabulatedFunctionEntity(String name, byte[] data, byte[] derivative, Long userId) {
         this.name = name;
         this.data = data;
         this.derivative = derivative;
+        this.userId = userId;
     }
-
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public byte[] getData() {
-        return data;
-    }
-
-    public byte[] getDerivative() {
-        return derivative;
-    }
-
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public byte[] getData() {
+        return data;
     }
 
     public void setData(byte[] data) {
         this.data = data;
     }
 
+    public byte[] getDerivative() {
+        return derivative;
+    }
+
     public void setDerivative(byte[] derivative) {
         this.derivative = derivative;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
 }
