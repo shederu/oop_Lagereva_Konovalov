@@ -4,6 +4,7 @@ UPDATE "user" SET login = ? WHERE id = ?;
 UPDATE tabulated_function SET data = ? WHERE id = ?;
 UPDATE tabulated_function SET derivative = ? WHERE id = ?;
 UPDATE tabulated_function SET name = ? WHERE id = ?;
+UPDATE tabulated_function SET user_id = ? WHERE id = ?;
 
 UPDATE composite_function SET expression = ? WHERE id = ?;
-
+UPDATE composite_function SET user_id = ? WHERE id = ?;
