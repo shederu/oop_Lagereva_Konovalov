@@ -16,4 +16,25 @@ public class CompositeFunctionEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String expression;
+
+    public CompositeFunctionEntity(String expression) {
+        this.expression = expression;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getExpression() {
+        return expression;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
+    }
+
 }

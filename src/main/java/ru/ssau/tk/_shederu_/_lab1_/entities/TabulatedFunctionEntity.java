@@ -24,4 +24,45 @@ public class TabulatedFunctionEntity {
     @Lob
     @Column(nullable = false)
     private byte[] derivative;
+
+    public TabulatedFunctionEntity(String name, byte[] data, byte[] derivative) {
+        this.name = name;
+        this.data = data;
+        this.derivative = derivative;
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public byte[] getDerivative() {
+        return derivative;
+    }
+
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    public void setDerivative(byte[] derivative) {
+        this.derivative = derivative;
+    }
+
 }
