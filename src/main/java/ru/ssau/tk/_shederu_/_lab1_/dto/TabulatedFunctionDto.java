@@ -5,14 +5,15 @@ public class TabulatedFunctionDto {
     private String name;
     private byte[] data;
     private byte[] derivative;
+    private Long userId;
 
     public TabulatedFunctionDto() {}
 
-    public TabulatedFunctionDto(Long id, String name, byte[] data, byte[] derivative) {
-        this.id = id;
+    public TabulatedFunctionDto(String name, byte[] data, byte[] derivative, Long userId) {
         this.name = name;
         this.data = data;
         this.derivative = derivative;
+        this.userId = userId;
     }
 
     public Long getId() {
@@ -45,5 +46,13 @@ public class TabulatedFunctionDto {
 
     public void setDerivative(byte[] derivative) {
         this.derivative = derivative;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
