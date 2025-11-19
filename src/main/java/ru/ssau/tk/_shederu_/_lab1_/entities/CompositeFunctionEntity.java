@@ -1,13 +1,10 @@
 package ru.ssau.tk._shederu_._lab1_.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.Objects;
 
 @Entity
 @Table(name = "composite_function")
-@Data
-@NoArgsConstructor
 public class CompositeFunctionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "comp_func_seq")
@@ -24,12 +21,20 @@ public class CompositeFunctionEntity {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private UserEntity user;
 
+    public CompositeFunctionEntity() {}
+
     public CompositeFunctionEntity(String expression, Long userId) {
         this.expression = expression;
         this.userId = userId;
     }
 
-    // Lombok @Data генерирует getters/setters, но можно добавить явно для ясности
+    public CompositeFunctionEntity(Long id, String expression, Long userId, UserEntity user) {
+        this.id = id;
+        this.expression = expression;
+        this.userId = userId;
+        this.user = user;
+    }
+
     public Long getId() {
         return id;
     }
@@ -60,5 +65,25 @@ public class CompositeFunctionEntity {
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CompositeFunctionEntity)) return false;
+        CompositeFunctionEntity that = (CompositeFunctionEntity) o;
+        return Objects.equals(id, that.id)
+                && Objects.equals(expression, that.expression)
+                && Objects.equals(userId, that.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, expression, userId);
+    }
+
+    @Override
+    public String toString() {
+        return "CompositeFunctionEntity{" + "id=" + id + ", expression='" + expression + '\'' + ", userId=" + userId + '}';
     }
 }
