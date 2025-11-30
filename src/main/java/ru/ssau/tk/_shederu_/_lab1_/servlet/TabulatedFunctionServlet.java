@@ -3,6 +3,7 @@ package ru.ssau.tk._shederu_._lab1_.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.ssau.tk._shederu_._lab1_.Dao.DataSourceProvider;
 import ru.ssau.tk._shederu_._lab1_.Dao.TabulatedFunctionDao;
+import ru.ssau.tk._shederu_._lab1_.config.DbConfig;
 import ru.ssau.tk._shederu_._lab1_.dto.TabulatedFunctionDto;
 import ru.ssau.tk._shederu_._lab1_.entities.TabulatedFunctionEntity;
 
@@ -25,11 +26,8 @@ public class TabulatedFunctionServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        String url = "jdbc:postgresql://localhost:5432/laba6";
-        String username = "postgres";
-        String password = "your_password";
-
-        DataSourceProvider dataSourceProvider = new DataSourceProvider(url, username, password);
+        DataSourceProvider dataSourceProvider = new DataSourceProvider(DbConfig.DB_URL, DbConfig.DB_USER, DbConfig.DB_PASSWORD
+        );
         this.functionDao = new TabulatedFunctionDao(dataSourceProvider);
     }
 
@@ -53,7 +51,9 @@ public class TabulatedFunctionServlet extends HttpServlet {
                     functions = functionDao.findAll();
                 }
 
-                List<TabulatedFunctionDto> dtos = functions.stream().map(this::entityToDto).collect(Collectors.toList());
+                List<TabulatedFunctionDto> dtos = functions.stream()
+                        .map(this::entityToDto)
+                        .collect(Collectors.toList());
                 resp.getWriter().write(objectMapper.writeValueAsString(dtos));
             } else {
                 Long id = extractId(pathInfo);

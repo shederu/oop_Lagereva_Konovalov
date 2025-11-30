@@ -3,6 +3,7 @@ package ru.ssau.tk._shederu_._lab1_.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.ssau.tk._shederu_._lab1_.Dao.DataSourceProvider;
 import ru.ssau.tk._shederu_._lab1_.Dao.UserDao;
+import ru.ssau.tk._shederu_._lab1_.config.DbConfig;
 import ru.ssau.tk._shederu_._lab1_.dto.UserDto;
 import ru.ssau.tk._shederu_._lab1_.entities.UserEntity;
 
@@ -25,11 +26,7 @@ public class UserServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        String url = "jdbc:postgresql://localhost:5432/laba6";
-        String username = "postgres";
-        String password = "your_password";
-
-        DataSourceProvider dataSourceProvider = new DataSourceProvider(url, username, password);
+        DataSourceProvider dataSourceProvider = new DataSourceProvider(DbConfig.DB_URL, DbConfig.DB_USER, DbConfig.DB_PASSWORD);
         this.userDao = new UserDao(dataSourceProvider);
     }
 
@@ -43,7 +40,6 @@ public class UserServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-
                 List<UserEntity> users = userDao.findAll();
                 List<UserDto> userDtos = users.stream().map(this::entityToDto).collect(Collectors.toList());
                 resp.getWriter().write(objectMapper.writeValueAsString(userDtos));

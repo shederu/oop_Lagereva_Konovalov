@@ -3,6 +3,7 @@ package ru.ssau.tk._shederu_._lab1_.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.ssau.tk._shederu_._lab1_.Dao.CompositeFunctionDao;
 import ru.ssau.tk._shederu_._lab1_.Dao.DataSourceProvider;
+import ru.ssau.tk._shederu_._lab1_.config.DbConfig;
 import ru.ssau.tk._shederu_._lab1_.dto.CompositeFunctionDto;
 import ru.ssau.tk._shederu_._lab1_.entities.CompositeFunctionEntity;
 
@@ -25,11 +26,8 @@ public class CompositeFunctionServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        String url = "jdbc:postgresql://localhost:5432/laba6";
-        String username = "postgres";
-        String password = "your_password";
-
-        DataSourceProvider dataSourceProvider = new DataSourceProvider(url, username, password);
+        DataSourceProvider dataSourceProvider = new DataSourceProvider(DbConfig.DB_URL, DbConfig.DB_USER, DbConfig.DB_PASSWORD
+        );
         this.compositeDao = new CompositeFunctionDao(dataSourceProvider);
     }
 
@@ -53,7 +51,9 @@ public class CompositeFunctionServlet extends HttpServlet {
                     functions = compositeDao.findAll();
                 }
 
-                List<CompositeFunctionDto> dtos = functions.stream().map(this::entityToDto).collect(Collectors.toList());
+                List<CompositeFunctionDto> dtos = functions.stream()
+                        .map(this::entityToDto)
+                        .collect(Collectors.toList());
                 resp.getWriter().write(objectMapper.writeValueAsString(dtos));
             } else {
                 Long id = extractId(pathInfo);
