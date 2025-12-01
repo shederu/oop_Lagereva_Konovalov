@@ -16,31 +16,6 @@ import java.util.List;
 public class CompositeFunctionController {
 
     @Autowired
-    private CompositeFunctionService compositeFunctionService;
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CompositeFunctionDto>> getFunctionsByUser(@PathVariable Long userId) {
-        List<CompositeFunctionDto> functions = compositeFunctionService.getFunctionsByUserId(userId);
-        return ResponseEntity.ok(functions);
-    }
-
-    @PostMapping
-    public ResponseEntity<CompositeFunctionDto> createFunction(@RequestBody CompositeFunctionDto functionDto) {
-        CompositeFunctionDto createdFunction = compositeFunctionService.createFunction(functionDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdFunction);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<CompositeFunctionDto> updateFunction(@PathVariable Long id, @RequestBody CompositeFunctionDto functionDto) {
-        try {
-            CompositeFunctionDto updatedFunction = compositeFunctionService.updateFunction(id, functionDto);
-            return ResponseEntity.ok(updatedFunction);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @Autowired
     private CompositeFunctionRepository compositeFunctionRepository;
 
     @GetMapping
