@@ -10,6 +10,7 @@ public class UserDto {
 
     private Long id;
     private String login;
+    private String password;
 
     public UserDto() {
         logger.trace("Создан пустой UserDto");
@@ -33,18 +34,26 @@ public class UserDto {
         this.login = login;
     }
 
+    public String getPassword() { return password; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof UserDto)) return false;
-        UserDto userDTO = (UserDto) o;
-        return Objects.equals(id, userDTO.id) && Objects.equals(login, userDTO.login);
+        UserDto userDto = (UserDto) o;
+        return Objects.equals(id, userDto.id) &&
+                Objects.equals(login, userDto.login) &&
+                Objects.equals(password, userDto.password);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, login);
+        return Objects.hash(id, login, password);
     }
+
 
     @Override
     public String toString() {

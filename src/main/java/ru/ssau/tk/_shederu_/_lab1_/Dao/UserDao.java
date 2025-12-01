@@ -145,14 +145,46 @@ public class UserDao {
         logger.error("Пользователь: {} не был создан", user.getLogin());
         return null;
     }
+
     public UserEntity save(UserEntity user) {
         if (user.getId() == null) {
             Long id = create(user);
             user.setId(id);
             return user;
         } else {
-            logger.warn("Метод save для обновления не полностью реализован");
-            return user;
+            boolean updated = update(user);
+            if (updated) {
+                return user;
+            } else {
+                logger.error("Failed to update user with id: {}", user.getId());
+                return null;
+            }
+        }
+    }
+
+    private boolean update(UserEntity user) {
+        String sql = "UPDATE \"user\" SET login = ?, password = ? WHERE id = ?";
+        logger.info("Обновление пользователя id: {}", user.getId());
+
+        try (Connection conn = dataSourceProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, user.getLogin());
+            stmt.setString(2, user.getPassword());
+            stmt.setLong(3, user.getId());
+
+            int affectedRows = stmt.executeUpdate();
+            boolean success = affectedRows > 0;
+
+            if (success) {
+                logger.info("Пользователь id: {} обновлён", user.getId());
+            } else {
+                logger.warn("Пользователь id: {} не найден для обновления", user.getId());
+            }
+            return success;
+        } catch (SQLException e) {
+            logger.error("Ошибка обновления пользователя id: {}", user.getId(), e);
+            return false;
         }
     }
 

@@ -129,8 +129,11 @@ public class UserServlet extends HttpServlet {
             logger.debug("DELETE user id: {}", id);
 
             if (userDao.deleteById(id)) {
+                // Успешное удаление - 204 No Content
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                // Не отправляем тело для 204
             } else {
+                // Пользователь не найден - 404 Not Found
                 logger.warn("User not found for deletion with id: {}", id);
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 resp.getWriter().write("{\"error\": \"User not found\"}");
@@ -151,6 +154,7 @@ public class UserServlet extends HttpServlet {
         UserDto dto = new UserDto();
         dto.setId(entity.getId());
         dto.setLogin(entity.getLogin());
+        dto.setPassword(entity.getPassword()); // Добавьте это
         return dto;
     }
 
@@ -160,6 +164,7 @@ public class UserServlet extends HttpServlet {
             entity.setId(dto.getId());
         }
         entity.setLogin(dto.getLogin());
+        entity.setPassword(dto.getPassword()); // Добавьте это
         return entity;
     }
 }
