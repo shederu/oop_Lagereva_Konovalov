@@ -1,20 +1,32 @@
 package ru.ssau.tk._shederu_._lab1_.entities;
 
 import jakarta.persistence.*;
+import java.util.*;
 
 @Entity
-@Table(name = "`user`")
+@Table(name = "users")
 public class UserEntity {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+    @SequenceGenerator(name = "user_seq", sequenceName = "users_id_seq", allocationSize = 1)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column(nullable = false, unique = true, length = 50)
     private String login;
 
     @Column(nullable = false)
     private String password;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<RoleEntity> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TabulatedFunctionEntity> tabulatedFunctions = new ArrayList<>();
 
     public UserEntity() {}
 
@@ -23,18 +35,49 @@ public class UserEntity {
         this.password = password;
     }
 
-    public UserEntity(Long id, String login, String password) {
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
         this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
         this.password = password;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Set<RoleEntity> getRoles() {
+        return roles;
+    }
 
-    public String getLogin() { return login; }
-    public void setLogin(String login) { this.login = login; }
+    public void setRoles(Set<RoleEntity> roles) {
+        this.roles = roles;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public List<TabulatedFunctionEntity> getTabulatedFunctions() {
+        return tabulatedFunctions;
+    }
+
+    public void setTabulatedFunctions(List<TabulatedFunctionEntity> tabulatedFunctions) {
+        this.tabulatedFunctions = tabulatedFunctions;
+    }
+
+    @Override
+    public String toString() {
+        return "UserEntity{" + "id=" + id + ", login='" + login + '\'' +
+                ", roles=" + roles + '}';
+    }
 }
