@@ -24,4 +24,6 @@ public interface CompositeFunctionRepository extends JpaRepository<CompositeFunc
     void deleteByUserId(Long userId);
 
     long countByUserId(Long userId);
+
+    List<CompositeFunctionEntity> findByExpressionContainingIgnoreCase(String expression);
 }

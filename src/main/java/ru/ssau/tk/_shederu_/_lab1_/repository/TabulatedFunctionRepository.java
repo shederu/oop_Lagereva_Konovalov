@@ -26,4 +26,6 @@ public interface TabulatedFunctionRepository extends JpaRepository<TabulatedFunc
     void deleteByUserId(Long userId);
 
     long countByUserId(Long userId);
+
+    List<TabulatedFunctionEntity> findByNameContainingIgnoreCase(String name);
 }

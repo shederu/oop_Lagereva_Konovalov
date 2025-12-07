@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.ssau.tk._shederu_._lab1_.entities.TabulatedFunctionEntity;
-import ru.ssau.tk._shederu_._lab1_.repository.TabulatedFunctionRepository;
+import ru.ssau.tk._shederu_._lab1_.dto.TabulatedFunctionDto;
+import ru.ssau.tk._shederu_._lab1_.service.TabulatedFunctionService;
 
 import java.util.List;
 
@@ -14,65 +14,57 @@ import java.util.List;
 public class TabulatedFunctionController {
 
     @Autowired
-    private TabulatedFunctionRepository tabulatedFunctionRepository;
+    private TabulatedFunctionService tabulatedFunctionService;
 
     @GetMapping
-    public ResponseEntity<List<TabulatedFunctionEntity>> getAllFunctions() {
-        return ResponseEntity.ok(tabulatedFunctionRepository.findAll());
+    public ResponseEntity<List<TabulatedFunctionDto>> getAllFunctions() {
+        List<TabulatedFunctionDto> functions = tabulatedFunctionService.getAllFunctions();
+        return ResponseEntity.ok(functions);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TabulatedFunctionEntity> getFunctionById(@PathVariable(required = false) String id) {
-        try {
-            if (id == null || id.equals("null") || id.trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            Long longId = Long.parseLong(id);
-            if (longId <= 0) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            return tabulatedFunctionRepository.findById(longId)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-
-    @PostMapping
-    public ResponseEntity<TabulatedFunctionEntity> createFunction(@RequestBody TabulatedFunctionEntity function) {
-        if (function == null || function.getName() == null || function.getName().trim().isEmpty() ||
-                function.getData() == null || function.getDerivative() == null ||
-                function.getUserId() == null || function.getUserId() <= 0) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        TabulatedFunctionEntity saved = tabulatedFunctionRepository.save(function);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<TabulatedFunctionEntity> updateFunction(@PathVariable Long id, @RequestBody TabulatedFunctionEntity function) {
+    public ResponseEntity<TabulatedFunctionDto> getFunctionById(@PathVariable Long id) {
         if (id == null || id <= 0) {
             return ResponseEntity.badRequest().build();
         }
+        TabulatedFunctionDto function = tabulatedFunctionService.getFunctionById(id);
+        return function != null ? ResponseEntity.ok(function) : ResponseEntity.notFound().build();
+    }
 
-        if (!tabulatedFunctionRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<TabulatedFunctionDto>> getFunctionsByUserId(@PathVariable Long userId) {
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.badRequest().build();
         }
+        List<TabulatedFunctionDto> functions = tabulatedFunctionService.getFunctionsByUserId(userId);
+        return ResponseEntity.ok(functions);
+    }
 
-        if (function == null || function.getName() == null || function.getName().trim().isEmpty() ||
-                function.getData() == null || function.getDerivative() == null ||
-                function.getUserId() == null || function.getUserId() <= 0) {
+    @PostMapping
+    public ResponseEntity<TabulatedFunctionDto> createFunction(@RequestBody TabulatedFunctionDto functionDto) {
+        if (functionDto == null || functionDto.getName() == null || functionDto.getName().trim().isEmpty() ||
+                functionDto.getData() == null || functionDto.getDerivative() == null ||
+                functionDto.getUserId() == null || functionDto.getUserId() <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
-        function.setId(id);
-        TabulatedFunctionEntity updated = tabulatedFunctionRepository.save(function);
-        return ResponseEntity.ok(updated);
+        TabulatedFunctionDto created = tabulatedFunctionService.createFunction(functionDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TabulatedFunctionDto> updateFunction(@PathVariable Long id, @RequestBody TabulatedFunctionDto functionDto) {
+        if (id == null || id <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (functionDto == null || functionDto.getName() == null || functionDto.getName().trim().isEmpty() ||
+                functionDto.getData() == null || functionDto.getDerivative() == null ||
+                functionDto.getUserId() == null || functionDto.getUserId() <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        TabulatedFunctionDto updated = tabulatedFunctionService.updateFunction(id, functionDto);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
@@ -81,11 +73,12 @@ public class TabulatedFunctionController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (!tabulatedFunctionRepository.existsById(id)) {
+        TabulatedFunctionDto existing = tabulatedFunctionService.getFunctionById(id);
+        if (existing == null) {
             return ResponseEntity.notFound().build();
         }
 
-        tabulatedFunctionRepository.deleteById(id);
+        tabulatedFunctionService.deleteFunction(id);
         return ResponseEntity.noContent().build();
     }
 }
