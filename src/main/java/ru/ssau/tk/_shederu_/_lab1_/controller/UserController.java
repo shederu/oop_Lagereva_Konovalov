@@ -75,6 +75,27 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserEntity> updateUser(@PathVariable Long id,
+                                                 @RequestBody UserEntity userDetails,
+                                                 Authentication auth) {
+        logger.info("ADMIN {} is updating user with ID {}", auth.getName(), id);
+
+        if (id == null || id <= 0) {
+            logger.warn("Update failed: invalid ID {}", id);
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            UserEntity updated = userService.updateUser(id, userDetails);
+            logger.info("User with ID {} updated successfully", id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            logger.warn("Update failed for ID {}: {}", id, e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     @DeleteMapping("/{userId}/roles/{roleName}")
     @PreAuthorize("hasRole('ADMIN')")
