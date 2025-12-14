@@ -266,28 +266,6 @@ public class TabulatedFunctionDao {
         return false;
     }
 
-    public boolean deleteByName(String name) {
-        String sql = "DELETE FROM tabulated_function WHERE name = ?";
-        logger.info("Удаление функции: {}", name);
-
-        try (Connection conn = dataSourceProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, name);
-
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows > 0) {
-                logger.info("Функция: {} удалена", name);
-            } else {
-                logger.warn("Функция: {} не найдена", name);
-            }
-            return affectedRows > 0;
-        } catch (SQLException e) {
-            logger.error("Ошибка удаления функции: {}", name, e);
-        }
-        return false;
-    }
-
     private TabulatedFunctionEntity mapResultSetToEntity(ResultSet rs) throws SQLException {
         TabulatedFunctionEntity function = new TabulatedFunctionEntity();
         function.setId(rs.getLong("id"));

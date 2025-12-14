@@ -1,9 +1,13 @@
 package ru.ssau.tk._shederu_._lab1_.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.ssau.tk._shederu_._lab1_.entities.RoleEntity;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class UserDto {
     private static final Logger logger = LoggerFactory.getLogger(UserDto.class);
@@ -11,6 +15,7 @@ public class UserDto {
     private Long id;
     private String login;
     private String password;
+    private Set<RoleEntity> roles = new HashSet<>();
 
     public UserDto() {
         logger.trace("Создан пустой UserDto");
@@ -19,6 +24,13 @@ public class UserDto {
     public UserDto(Long id, String login) {
         this.id = id;
         this.login = login;
+        logger.trace("Создан UserDto: id={}, login={}", id, login);
+    }
+
+    public UserDto(Long id, String login, String password) {
+        this.id = id;
+        this.login = login;
+        this.password = password;
         logger.trace("Создан UserDto: id={}, login={}", id, login);
     }
 
@@ -39,6 +51,19 @@ public class UserDto {
         this.password = password;
     }
 
+    @JsonProperty("roles")
+    public Set<RoleEntity> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<RoleEntity> roles) {
+        this.roles = roles;
+    }
+
+    public boolean hasRole(String roleName) {
+        return roles.stream().anyMatch(role -> role.getName().equals(roleName));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -46,17 +71,17 @@ public class UserDto {
         UserDto userDto = (UserDto) o;
         return Objects.equals(id, userDto.id) &&
                 Objects.equals(login, userDto.login) &&
-                Objects.equals(password, userDto.password);
+                Objects.equals(password, userDto.password) &&
+                Objects.equals(roles, userDto.roles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, login, password);
+        return Objects.hash(id, login, password, roles);
     }
-
 
     @Override
     public String toString() {
-        return "UserDto{id=" + id + ", login='" + login + "'}";
+        return "UserDto{id=" + id + ", login='" + login + "', roles=" + roles + "}";
     }
 }

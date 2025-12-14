@@ -18,6 +18,7 @@ public class UserMapper {
                 entity.getId(), entity.getLogin());
 
         UserDto dto = new UserDto(entity.getId(), entity.getLogin());
+        dto.setRoles(entity.getRoles());
 
         logger.trace("UserDto создан: {}", dto);
         return dto;
@@ -34,6 +35,7 @@ public class UserMapper {
 
         UserEntity entity = new UserEntity(dto.getLogin(), password);
         entity.setId(dto.getId());
+        entity.setRoles(dto.getRoles());
 
         logger.trace("UserEntity создан: {}", entity);
         return entity;
