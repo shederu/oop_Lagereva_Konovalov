@@ -40,7 +40,69 @@ public class UserDao {
         logger.debug("Пользователь по id: {} не найден", id);
         return Optional.empty();
     }
+    public boolean updatePassword(Long id, String password) {
+        String sql = "UPDATE \"user\" SET password = ? WHERE id = ?";
+        logger.info("Обновление пароля для пользователя с id: {}", id);
 
+        try (Connection conn = dataSourceProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, password);
+            stmt.setLong(2, id);
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                logger.info("Пароль пользователя с id: {} обновлён", id);
+            } else {
+                logger.warn("Пользователь с id: {} не найден", id);
+            }
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            logger.error("Ошибка обновления пароля для id: {}", id, e);
+        }
+        return false;
+    }
+    public boolean updateLogin(Long id, String login) {
+        String sql = "UPDATE \"user\" SET login = ? WHERE id = ?";
+        logger.info("Обновление логина для пользователя с id: {}", id);
+
+        try (Connection conn = dataSourceProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, login);
+            stmt.setLong(2, id);
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                logger.info("Логин пользователя с id: {} обновлён на: {}", id, login);
+            } else {
+                logger.warn("Пользователь с id: {} не найден", id);
+            }
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            logger.error("Ошибка обновления логина для id: {}", id, e);
+        }
+        return false;
+    }
+
+        public long count() {
+        String sql = "SELECT COUNT(*) FROM \"user\"";
+        logger.info("Подсчёт всех пользователей");
+
+        try (Connection conn = dataSourceProvider.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            if (rs.next()) {
+                long count = rs.getLong(1);
+                logger.info("Всего пользователей: {}", count);
+                return count;
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка подсчёта пользователей", e);
+        }
+        return 0;
+    }
     public Optional<UserEntity> findByLogin(String login) {
         String sql = "SELECT * FROM users WHERE login = ?";
         logger.info("Начало поиска пользователя по login: {}", login);
@@ -209,6 +271,44 @@ public class UserDao {
 
         } catch (SQLException e) {
             logger.error("Ошибка добавления роли {} пользователю {}", roleId, userId, e);
+        }
+    }
+
+    public boolean deleteByLogin(String login) {
+        String sql = "DELETE FROM \"user\" WHERE login = ?";
+        logger.info("Удаление пользователя: {}", login);
+
+        try (Connection conn = dataSourceProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, login);
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                logger.info("Пользователь: {} удалён", login);
+            } else {
+                logger.warn("Пользователь: {} не найден", login);
+            }
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            logger.error("Ошибка удаления пользователя: {}", login, e);
+        }
+        return false;
+    }
+
+
+
+    public void deleteAll() {
+        String sql = "DELETE FROM \"user\"";
+        logger.info("Удаление всех пользователей");
+
+        try (Connection conn = dataSourceProvider.getConnection();
+             Statement stmt = conn.createStatement()) {
+
+            int affectedRows = stmt.executeUpdate(sql);
+            logger.info("Удалено {} пользователей", affectedRows);
+        } catch (SQLException e) {
+            logger.error("Ошибка удаления всех пользователей", e);
         }
     }
 

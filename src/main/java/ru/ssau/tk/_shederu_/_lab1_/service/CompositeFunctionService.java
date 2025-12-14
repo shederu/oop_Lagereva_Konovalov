@@ -34,7 +34,6 @@ public class CompositeFunctionService {
         return Optional.empty();
     }
 
-
     public Optional<CompositeFunctionDto> getFunctionByExpression(String expression) {
         logger.info("Запрос функции по выражению: {}", expression);
 

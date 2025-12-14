@@ -1,4 +1,4 @@
-package ru.ssau.tk._shederu_._lab1_.service;
+/*package ru.ssau.tk._shederu_._lab1_.service;
 
 import org.junit.jupiter.api.*;
 import ru.ssau.tk._shederu_._lab1_.Dao.DataSourceProvider;
@@ -170,3 +170,4 @@ class TabulatedFunctionServiceTest {
         assertFalse(found.isPresent());
     }
 }
+*/

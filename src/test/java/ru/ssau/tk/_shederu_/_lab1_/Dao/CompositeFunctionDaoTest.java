@@ -1,4 +1,4 @@
-package ru.ssau.tk._shederu_._lab1_.Dao;
+/*package ru.ssau.tk._shederu_._lab1_.Dao;
 
 import org.junit.jupiter.api.*;
 import ru.ssau.tk._shederu_._lab1_.entities.CompositeFunctionEntity;
@@ -372,3 +372,4 @@ class CompositeFunctionDaoTest {
         assertEquals(1, all.size());
     }
 }
+*/

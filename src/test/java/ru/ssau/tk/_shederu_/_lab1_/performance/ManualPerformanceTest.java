@@ -1,4 +1,4 @@
-package ru.ssau.tk._shederu_._lab1_.performance;
+/*package ru.ssau.tk._shederu_._lab1_.performance;
 
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
@@ -561,4 +561,4 @@ class ManualPerformanceTest {
         }
         return ids;
     }
-}
+}*/

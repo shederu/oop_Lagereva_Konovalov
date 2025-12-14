@@ -45,12 +45,20 @@ public class CompositeFunctionServlet extends HttpServlet {
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
                 String userIdParam = req.getParameter("userId");
+                String patternParam = req.getParameter("pattern");
                 List<CompositeFunctionEntity> functions;
 
-                if (userIdParam != null) {
+                if (userIdParam != null && patternParam != null) {
+                    Long userId = Long.parseLong(userIdParam);
+                    logger.debug("GET composite functions for userId: {} with pattern: {}", userId, patternParam);
+                    functions = compositeDao.findByExpressionContainingAndUserId(patternParam, userId);
+                } else if (userIdParam != null) {
                     Long userId = Long.parseLong(userIdParam);
                     logger.debug("GET all composite functions for userId: {}", userId);
                     functions = compositeDao.findByUserId(userId);
+                } else if (patternParam != null) {
+                    logger.debug("GET composite functions with pattern: {}", patternParam);
+                    functions = compositeDao.findByExpressionContaining(patternParam);
                 } else {
                     logger.debug("GET all composite functions");
                     functions = compositeDao.findAll();
