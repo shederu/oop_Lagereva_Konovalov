@@ -1,5 +1,6 @@
 package ru.ssau.tk._shederu_._lab1_.servlet;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.ssau.tk._shederu_._lab1_.Dao.DataSourceProvider;
 import ru.ssau.tk._shederu_._lab1_.Dao.TabulatedFunctionDao;
@@ -78,26 +79,67 @@ public class TabulatedFunctionServlet extends HttpServlet {
             resp.getWriter().write("{\"error\": \"Invalid ID format\"}");
         }
     }
-
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
+        logger.info("POST /api/tabulated-functions");
+
         try {
             TabulatedFunctionDto dto = objectMapper.readValue(req.getReader(), TabulatedFunctionDto.class);
-            logger.debug("POST create tabulated function for userId: {}", dto.getUserId());
+            logger.info("Parsed DTO: name={}, userId={}", dto.getName(), dto.getUserId());
+
+            if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"error\": \"Name is required\"}");
+                return;
+            }
+            if (dto.getUserId() == null) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"error\": \"UserId is required\"}");
+                return;
+            }
+
+            if (!dto.hasValidData()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"error\": \"Invalid or missing data (base64 format)\"}");
+                return;
+            }
+            if (!dto.hasValidDerivative()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"error\": \"Invalid or missing derivative (base64 format)\"}");
+                return;
+            }
 
             TabulatedFunctionEntity entity = dtoToEntity(dto);
             Long newId = functionDao.create(entity);
+
+            if (newId == null) {
+                logger.error("Failed to create function in database");
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().write("{\"error\": \"Database error\"}");
+                return;
+            }
+
             entity.setId(newId);
+            TabulatedFunctionDto responseDto = entityToDto(entity);
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
-            resp.getWriter().write(objectMapper.writeValueAsString(entityToDto(entity)));
-        } catch (Exception e) {
-            logger.error("Error creating tabulated function", e);
+            resp.getWriter().write(objectMapper.writeValueAsString(responseDto));
+
+        } catch (JsonProcessingException e) {
+            logger.error("JSON parsing error", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{\"error\": \"Invalid request body\"}");
+            resp.getWriter().write("{\"error\": \"Invalid JSON format: " + e.getMessage() + "\"}");
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error", e);
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            logger.error("Unexpected error", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"error\": \"Internal server error\"}");
         }
     }
 
@@ -165,9 +207,10 @@ public class TabulatedFunctionServlet extends HttpServlet {
         TabulatedFunctionDto dto = new TabulatedFunctionDto();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
+        dto.setUserId(entity.getUserId());
         dto.setData(entity.getData());
         dto.setDerivative(entity.getDerivative());
-        dto.setUserId(entity.getUserId());
+
         return dto;
     }
 
@@ -177,9 +220,17 @@ public class TabulatedFunctionServlet extends HttpServlet {
             entity.setId(dto.getId());
         }
         entity.setName(dto.getName());
+        entity.setUserId(dto.getUserId());
+        if (dto.getData() == null) {
+            logger.error("Data is null in DTO");
+            throw new IllegalArgumentException("Data is required");
+        }
+        if (dto.getDerivative() == null) {
+            logger.error("Derivative is null in DTO");
+            throw new IllegalArgumentException("Derivative is required");
+        }
         entity.setData(dto.getData());
         entity.setDerivative(dto.getDerivative());
-        entity.setUserId(dto.getUserId());
         return entity;
     }
 }
