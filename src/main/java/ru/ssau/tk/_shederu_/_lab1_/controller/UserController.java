@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ru.ssau.tk._shederu_._lab1_.dto.UserDto;
 import ru.ssau.tk._shederu_._lab1_.dto.UserRegistrationDto;
 import ru.ssau.tk._shederu_._lab1_.entities.UserEntity;
 import ru.ssau.tk._shederu_._lab1_.repository.UserRepository;
@@ -15,6 +16,7 @@ import ru.ssau.tk._shederu_._lab1_.service.UserService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -42,25 +44,37 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserEntity> getCurrentUser(Authentication authentication) {
+    public ResponseEntity<UserDto> getCurrentUser(Authentication authentication) {
         logger.debug("Fetching current user: {}", authentication.getName());
         UserEntity user = userRepository.findByLogin(authentication.getName()).orElse(null);
-        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+        if (user != null) {
+            return ResponseEntity.ok(convertToDto(user));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserEntity>> getAllUsers(Authentication auth) {
+    public ResponseEntity<List<UserDto>> getAllUsers(Authentication auth) {
         logger.info("ADMIN {} fetching all users", auth.getName());
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<UserDto> users = userService.getAllUsers()
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserEntity> getUserById(@PathVariable Long id, Authentication auth) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id, Authentication auth) {
         logger.debug("ADMIN {} fetching user with ID: {}", auth.getName(), id);
-        UserEntity user = userService.getUserById(id);
-        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+        try {
+            UserEntity user = userService.getUserById(id);
+            return user != null ? ResponseEntity.ok(convertToDto(user)) : ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            logger.warn("User not found with ID {}: {}", id, e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{userId}/roles/{roleName}")
@@ -75,11 +89,12 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserEntity> updateUser(@PathVariable Long id,
-                                                 @RequestBody UserEntity userDetails,
-                                                 Authentication auth) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id,
+                                              @RequestBody UserDto userDetails,
+                                              Authentication auth) {
         logger.info("ADMIN {} is updating user with ID {}", auth.getName(), id);
 
         if (id == null || id <= 0) {
@@ -88,9 +103,10 @@ public class UserController {
         }
 
         try {
-            UserEntity updated = userService.updateUser(id, userDetails);
+            UserEntity entityToUpdate = convertDtoToEntity(userDetails);
+            UserEntity updated = userService.updateUser(id, entityToUpdate);
             logger.info("User with ID {} updated successfully", id);
-            return ResponseEntity.ok(updated);
+            return ResponseEntity.ok(convertToDto(updated));
         } catch (RuntimeException e) {
             logger.warn("Update failed for ID {}: {}", id, e.getMessage());
             return ResponseEntity.notFound().build();
@@ -121,5 +137,18 @@ public class UserController {
         userService.deleteUser(id);
         logger.info("User with ID {} deleted successfully", id);
         return ResponseEntity.noContent().build();
+    }
+
+    private UserDto convertToDto(UserEntity user) {
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setLogin(user.getLogin());
+        return dto;
+    }
+
+    private UserEntity convertDtoToEntity(UserDto dto) {
+        UserEntity entity = new UserEntity();
+        entity.setLogin(dto.getLogin());
+        return entity;
     }
 }
