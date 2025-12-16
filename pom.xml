@@ -115,7 +115,7 @@
                         <port>8080</port>
                     </httpConnector>
                     <webApp>
-                        <contextPath>/laba5</contextPath>
+                        <contextPath>/api</contextPath>
                     </webApp>
                 </configuration>
             </plugin>
@@ -127,7 +127,7 @@
                 <version>2.2</version>
                 <configuration>
                     <port>8080</port>
-                    <path>/laba5</path>
+                    <path>/api</path>
                 </configuration>
             </plugin>
 
