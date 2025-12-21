@@ -14,6 +14,7 @@ import ru.ssau.tk._shederu_._lab1_.entities.UserEntity;
 import ru.ssau.tk._shederu_._lab1_.repository.UserRepository;
 import ru.ssau.tk._shederu_._lab1_.service.UserService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,17 +32,41 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserRegistrationDto dto) {
-        logger.info("Registration request for login: {}", dto.getLogin());
         try {
+            System.out.println("Received DTO: " + dto);
+            System.out.println("Login: " + dto.getLogin());
+            System.out.println("Password: " + dto.getPassword());
+
+            if (dto.getLogin() == null || dto.getLogin().isEmpty()) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "Логин не может быть пустым");
+                return ResponseEntity.badRequest().body(error);
+            }
+
+            if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "Пароль не может быть пустым");
+                return ResponseEntity.badRequest().body(error);
+            }
+
             UserEntity user = userService.registerUser(dto);
-            logger.info("User {} registered successfully with ID {}", dto.getLogin(), user.getId());
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of("id", user.getId(), "login", user.getLogin(), "message", "User registered successfully"));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Пользователь зарегистрирован");
+            response.put("id", user.getId());
+            response.put("login", user.getLogin());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            logger.error("Registration failed for login {}: {}", dto.getLogin(), e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            e.printStackTrace();
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
+
+
 
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser(Authentication authentication) {
@@ -149,6 +174,8 @@ public class UserController {
     private UserEntity convertDtoToEntity(UserDto dto) {
         UserEntity entity = new UserEntity();
         entity.setLogin(dto.getLogin());
+        entity.setPassword(dto.getPassword());  // ← ДОБАВИТЬ ЭТУ СТРОКУ
         return entity;
     }
+
 }

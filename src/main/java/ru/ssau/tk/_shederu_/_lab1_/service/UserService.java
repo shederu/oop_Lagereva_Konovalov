@@ -28,7 +28,6 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
     public UserEntity registerUser(UserRegistrationDto dto) {
         if (userRepository.existsByLogin(dto.getLogin())) {
             logger.warn("Registration failed: user with login {} already exists", dto.getLogin());
@@ -54,7 +53,6 @@ public class UserService {
         return savedUser;
     }
 
-
     public void assignRoleToUser(Long userId, String roleName) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -76,7 +74,6 @@ public class UserService {
         logger.info("Role {} removed from user {}", roleName, user.getLogin());
     }
 
-
     public List<UserEntity> getAllUsers() {
         logger.debug("Fetching all users");
         return userRepository.findAll();
@@ -91,7 +88,6 @@ public class UserService {
         logger.debug("Fetching user by login: {}", login);
         return userRepository.findByLogin(login).orElse(null);
     }
-
 
     public UserEntity createUser(UserEntity user) {
         logger.info("Creating user: {}", user.getLogin());

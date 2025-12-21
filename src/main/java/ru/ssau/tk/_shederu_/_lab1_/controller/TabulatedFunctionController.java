@@ -1,149 +1,121 @@
 package ru.ssau.tk._shederu_._lab1_.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.ssau.tk._shederu_._lab1_.dto.TabulatedFunctionDto;
 import ru.ssau.tk._shederu_._lab1_.entities.TabulatedFunctionEntity;
-import ru.ssau.tk._shederu_._lab1_.repository.TabulatedFunctionRepository;
+import ru.ssau.tk._shederu_._lab1_.functions.TabulatedFunction;
+import ru.ssau.tk._shederu_._lab1_.io.FunctionsIO;
 import ru.ssau.tk._shederu_._lab1_.repository.UserRepository;
 import ru.ssau.tk._shederu_._lab1_.service.TabulatedFunctionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/tabulated-functions")
+@RequestMapping("/api/functions")
 public class TabulatedFunctionController {
+
     private static final Logger logger = LoggerFactory.getLogger(TabulatedFunctionController.class);
 
     @Autowired
-    private TabulatedFunctionService tabulatedFunctionService;
-
-    @Autowired
-    private TabulatedFunctionRepository tabulatedFunctionRepository;
+    private TabulatedFunctionService functionService;
 
     @Autowired
     private UserRepository userRepository;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('VIEWER', 'CREATOR', 'ADMIN')")
-    public ResponseEntity<List<TabulatedFunctionDto>> getAllFunctions(Authentication auth) {
-        logger.info("User {} fetching all tabulated functions", auth.getName());
-        List<TabulatedFunctionDto> functions = tabulatedFunctionService.getAllFunctions();
-        return ResponseEntity.ok(functions);
+    @PreAuthorize("hasAnyRole('CREATOR', 'VIEWER', 'ADMIN')")
+    public ResponseEntity<Map<String, Object>> getAllUserFunctions(Authentication auth) {
+        Long userId = userRepository.findByLogin(auth.getName()).get().getId();
+        List<TabulatedFunctionDto> functions = functionService.getFunctionsByUserId(userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("functions", functions);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('VIEWER', 'CREATOR', 'ADMIN')")
-    public ResponseEntity<TabulatedFunctionDto> getFunctionById(@PathVariable Long id, Authentication auth) {
-        logger.debug("User {} fetching tabulated function with ID: {}", auth.getName(), id);
-        if (id == null || id <= 0) {
-            return ResponseEntity.badRequest().build();
-        }
-        TabulatedFunctionDto function = tabulatedFunctionService.getFunctionById(id);
+    @PreAuthorize("hasAnyRole('CREATOR', 'VIEWER', 'ADMIN')")
+    public ResponseEntity<TabulatedFunctionDto> getFunctionById(@PathVariable Long id) {
+        TabulatedFunctionDto function = functionService.getFunctionById(id);
         return function != null ? ResponseEntity.ok(function) : ResponseEntity.notFound().build();
-    }
-
-    @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TabulatedFunctionDto>> getFunctionsByUserId(@PathVariable Long userId, Authentication auth) {
-        logger.info("ADMIN {} fetching functions for user {}", auth.getName(), userId);
-        if (userId == null || userId <= 0) {
-            return ResponseEntity.badRequest().build();
-        }
-        List<TabulatedFunctionDto> functions = tabulatedFunctionService.getFunctionsByUserId(userId);
-        return ResponseEntity.ok(functions);
-    }
-
-    @PostMapping
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    public ResponseEntity<TabulatedFunctionDto> createFunction(@RequestBody TabulatedFunctionDto functionDto, Authentication auth) {
-        logger.info("User {} (CREATOR/ADMIN) creating tabulated function: {}", auth.getName(), functionDto.getName());
-
-        if (functionDto == null || functionDto.getName() == null || functionDto.getName().trim().isEmpty() ||
-                functionDto.getData() == null || functionDto.getDerivative() == null ||
-                functionDto.getUserId() == null || functionDto.getUserId() <= 0) {
-            logger.warn("Invalid function data provided");
-            return ResponseEntity.badRequest().build();
-        }
-
-        TabulatedFunctionDto created = tabulatedFunctionService.createFunction(functionDto);
-        logger.info("Tabulated function created successfully: id={}, name={}", created.getId(), created.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    public ResponseEntity<TabulatedFunctionDto> updateFunction(@PathVariable Long id,
-                                                               @RequestBody TabulatedFunctionDto functionDto,
-                                                               Authentication auth) {
-        logger.info("User {} attempting to update tabulated function {}", auth.getName(), id);
-
-        if (id == null || id <= 0) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        if (functionDto == null || functionDto.getName() == null || functionDto.getName().trim().isEmpty() ||
-                functionDto.getData() == null || functionDto.getDerivative() == null ||
-                functionDto.getUserId() == null || functionDto.getUserId() <= 0) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        TabulatedFunctionEntity existing = tabulatedFunctionRepository.findById(id).orElse(null);
-        if (existing == null) {
-            logger.warn("Function not found: {}", id);
-            return ResponseEntity.notFound().build();
-        }
-
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean isOwner = existing.getUserId().equals(
-                userRepository.findByLogin(auth.getName()).get().getId()
-        );
-
-        if (!isAdmin && !isOwner) {
-            logger.warn("User {} tried to update function {} which they don't own", auth.getName(), id);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        TabulatedFunctionDto updated = tabulatedFunctionService.updateFunction(id, functionDto);
-        logger.info("Function {} updated successfully by {}", id, auth.getName());
-        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    public ResponseEntity<Void> deleteFunction(@PathVariable Long id, Authentication auth) {
-        logger.info("User {} attempting to delete tabulated function {}", auth.getName(), id);
+    public ResponseEntity<Void> deleteFunction(@PathVariable Long id) {
+        functionService.deleteFunction(id);
+        return ResponseEntity.ok().build();
+    }
 
-        if (id == null || id <= 0) {
-            return ResponseEntity.badRequest().build();
+    @GetMapping("/search")
+    public ResponseEntity<List<TabulatedFunctionDto>> searchFunctions(@RequestParam String query) {
+        return ResponseEntity.ok(functionService.findByName(query));
+    }
+
+    @PostMapping("/upload")
+    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    public ResponseEntity<Map<String, Object>> uploadFromFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(defaultValue = "Uploaded Function") String name,
+            Authentication auth) {
+
+        try {
+            TabulatedFunction function;
+            try (BufferedInputStream is = new BufferedInputStream(file.getInputStream())) {
+                function = FunctionsIO.deserialize(is);
+            }
+
+            Long userId = userRepository.findByLogin(auth.getName()).get().getId();
+            TabulatedFunctionEntity saved = functionService.saveFunctionToDb(function, name, userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("id", saved.getId());
+            response.put("name", saved.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (Exception e) {
+            logger.error("Upload error", e);
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", "error");
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
+    }
 
-        TabulatedFunctionEntity existing = tabulatedFunctionRepository.findById(id).orElse(null);
-        if (existing == null) {
-            logger.warn("Function not found: {}", id);
-            return ResponseEntity.notFound().build();
+    @GetMapping("/{id}/download")
+    @PreAuthorize("hasAnyRole('CREATOR', 'VIEWER', 'ADMIN')")
+    public ResponseEntity<byte[]> downloadFunction(@PathVariable Long id) {
+        try {
+            TabulatedFunction function = functionService.loadFunctionFromDb(id);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            FunctionsIO.serialize(new BufferedOutputStream(bos), function);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"function_" + id + ".bin\"")
+                    .body(bos.toByteArray());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
 
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean isOwner = existing.getUserId().equals(
-                userRepository.findByLogin(auth.getName()).get().getId()
-        );
-
-        if (!isAdmin && !isOwner) {
-            logger.warn("User {} tried to delete function {} which they don't own", auth.getName(), id);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        tabulatedFunctionService.deleteFunction(id);
-        logger.info("Function {} deleted successfully by {}", id, auth.getName());
-        return ResponseEntity.noContent().build();
+    @GetMapping("/{id}/export")
+    public ResponseEntity<TabulatedFunctionDto> exportFunction(@PathVariable Long id) {
+        return getFunctionById(id);
     }
 }
