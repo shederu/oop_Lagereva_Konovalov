@@ -1,0 +1,1151 @@
+{
+	"info": {
+		"_postman_id": "c647ef92-fd3a-4cf2-9e8c-27954b2d9ace",
+		"name": "OOPs Framework (Spring Boot)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50488691",
+		"_collection_link": "https://bulatsn-9953934.postman.co/workspace/Bulat's-Workspace~c15695f8-e379-4f09-86b1-1bfd489f4b6d/collection/50488691-c647ef92-fd3a-4cf2-9e8c-27954b2d9ace?action=share&source=collection_link&creator=50488691"
+	},
+	"item": [
+		{
+			"name": "Users API",
+			"item": [
+				{
+					"name": "POST Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 CREATED\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has user data\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('id');",
+									"    pm.expect(response).to.have.property('login');",
+									"    pm.environment.set(\"user_id\", response.id);",
+									"    console.log(\"Created user with ID: \" + response.id);",
+									"});",
+									"",
+									"const userSchema = {",
+									"    \"type\": \"object\",",
+									"    \"properties\": {",
+									"        \"id\": {\"type\": \"number\"},",
+									"        \"login\": {\"type\": \"string\"}",
+									"    },",
+									"    \"required\": [\"id\", \"login\"]",
+									"};",
+									"",
+									"pm.test(\"Response matches schema\", function () {",
+									"    pm.response.to.have.jsonSchema(userSchema);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"login\": \"testuser_{{$timestamp}}\", \"password\": \"pass123\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET All Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Each user has required fields\", function () {",
+									"    const users = pm.response.json();",
+									"    users.forEach(function(user) {",
+									"        pm.expect(user).to.have.property('id');",
+									"        pm.expect(user).to.have.property('login');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET User by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"User has correct ID\", function () {",
+									"    const user = pm.response.json();",
+									"    pm.expect(user.id).to.eql(parseInt(pm.environment.get(\"user_id\")));",
+									"});",
+									"",
+									"pm.test(\"Response contains required fields\", function () {",
+									"    const user = pm.response.json();",
+									"    pm.expect(user).to.include.all.keys(['id', 'login']);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET User /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"null"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET User 999 (not found)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 Not Found\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/99999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"99999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"login\": \"updated_user_{{$timestamp}}\", \"password\": \"newPassword123\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Update User /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"login\": \"test\", \"password\": \"test\"}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"null"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tabulated Functions API",
+			"item": [
+				{
+					"name": "POST Create Tabulated Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 CREATED\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has tabulated function data\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('id');",
+									"    pm.expect(response).to.have.property('name');",
+									"    pm.expect(response).to.have.property('data');",
+									"    pm.expect(response).to.have.property('derivative');",
+									"    pm.expect(response).to.have.property('userId');",
+									"    pm.environment.set(\"tabulated_function_id\", response.id);",
+									"    console.log(\"Created tabulated function with ID: \" + response.id);",
+									"});",
+									"",
+									"const tabulatedFunctionSchema = {",
+									"    \"type\": \"object\",",
+									"    \"properties\": {",
+									"        \"id\": {\"type\": \"number\"},",
+									"        \"name\": {\"type\": \"string\"},",
+									"        \"data\": {\"type\": \"string\"},",
+									"        \"derivative\": {\"type\": \"string\"},",
+									"        \"userId\": {\"type\": \"number\"}",
+									"    },",
+									"    \"required\": [\"id\", \"name\", \"data\", \"derivative\", \"userId\"]",
+									"};",
+									"",
+									"pm.test(\"Response matches tabulated function schema\", function () {",
+									"    pm.response.to.have.jsonSchema(tabulatedFunctionSchema);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"{{sample_function_name}}\",\r\n  \"data\": \"AQIDBAUGBw==\",\r\n  \"derivative\": \"AQEBAQEBAg==\",\r\n  \"userId\": {{user_id}}\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET All Tabulated Functions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Each tabulated function has required fields\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"    ",
+									"    if (response.length > 0) {",
+									"        response.forEach(function(func, index) {",
+									"            pm.expect(func).to.have.property('id');",
+									"            pm.expect(func).to.have.property('name');",
+									"            pm.expect(func).to.have.property('data');",
+									"            pm.expect(func).to.have.property('derivative');",
+									"            pm.expect(func).to.have.property('userId');",
+									"        });",
+									"    }",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Tabulated Function by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Function has correct ID\", function () {",
+									"    const func = pm.response.json();",
+									"    pm.expect(func.id).to.eql(parseInt(pm.environment.get(\"tabulated_function_id\")));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions/{{tabulated_function_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions",
+								"{{tabulated_function_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Tabulated Function /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions",
+								"null"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Tabulated Function 99999 (not found)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 Not Found\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions/99999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions",
+								"99999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Update Tabulated Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"updated_function\", \"data\": \"AQIDBAUGBw==\", \"derivative\": \"AQEBAQEBAg==\", \"userId\": {{user_id}}}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions/{{tabulated_function_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions",
+								"{{tabulated_function_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Update Tabulated Function /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"test\", \"data\": \"AQIDBAUGBw==\", \"derivative\": \"AQEBAQEBAg==\", \"userId\": 1}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions",
+								"null"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Tabulated Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions/{{tabulated_function_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions",
+								"{{tabulated_function_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Tabulated Function /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tabulated-functions/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tabulated-functions",
+								"null"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Composite Functions API",
+			"item": [
+				{
+					"name": "POST Create Composite Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 CREATED\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has composite function data\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.have.property('id');",
+									"    pm.expect(response).to.have.property('expression');",
+									"    pm.expect(response).to.have.property('userId');",
+									"    pm.environment.set(\"composite_function_id\", response.id);",
+									"    console.log(\"Created composite function with ID: \" + response.id);",
+									"});",
+									"",
+									"const compositeFunctionSchema = {",
+									"    \"type\": \"object\",",
+									"    \"properties\": {",
+									"        \"id\": {\"type\": \"number\"},",
+									"        \"expression\": {\"type\": \"string\"},",
+									"        \"userId\": {\"type\": \"number\"}",
+									"    },",
+									"    \"required\": [\"id\", \"expression\", \"userId\"]",
+									"};",
+									"",
+									"pm.test(\"Response matches composite function schema\", function () {",
+									"    pm.response.to.have.jsonSchema(compositeFunctionSchema);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"expression\": \"{{sample_composite_expression}}\",\r\n  \"userId\": {{user_id}}\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{base_url}}/composite-functions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET All Composite Functions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/composite-functions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Composite Function by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Function has correct ID\", function () {",
+									"    const func = pm.response.json();",
+									"    pm.expect(func.id).to.eql(parseInt(pm.environment.get(\"composite_function_id\")));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/composite-functions/{{composite_function_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions",
+								"{{composite_function_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Composite Function /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/composite-functions/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions",
+								"null"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Composite Function 99999 (not found)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 Not Found\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/composite-functions/99999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions",
+								"99999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Update Composite Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"expression\": \"updated_func(x)\", \"userId\": {{user_id}}}"
+						},
+						"url": {
+							"raw": "{{base_url}}/composite-functions/{{composite_function_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions",
+								"{{composite_function_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Update Composite Function /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"expression\": \"test\", \"userId\": 1}"
+						},
+						"url": {
+							"raw": "{{base_url}}/composite-functions/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions",
+								"null"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Composite Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/composite-functions/{{composite_function_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions",
+								"{{composite_function_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Composite Function /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/composite-functions/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"composite-functions",
+								"null"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE User /null (should be 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/null",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"null"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "admin123",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "admin",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

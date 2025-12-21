@@ -1,0 +1,1012 @@
+{
+	"info": {
+		"_postman_id": "992be6ea-e16b-47b9-a308-d502c37ac82c",
+		"name": "OOPsFramework",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50488691",
+		"_collection_link": "https://bulatsn-9953934.postman.co/workspace/Bulat's-Workspace~c15695f8-e379-4f09-86b1-1bfd489f4b6d/collection/50488691-992be6ea-e16b-47b9-a308-d502c37ac82c?action=share&source=collection_link&creator=50488691"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "1. GET All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Получение всех пользователей"
+					},
+					"response": []
+				},
+				{
+					"name": "2. GET User by ID (Valid)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на получение существующего пользователя",
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has user data\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.login).to.be.a('string');",
+									"    pm.expect(jsonData.password).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{testUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{testUserId}}"
+							]
+						},
+						"description": "Получение пользователя по корректному ID"
+					},
+					"response": []
+				},
+				{
+					"name": "3. GET User by ID (Invalid)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на получение несуществующего пользователя",
+									"pm.test(\"Status code is 404\", function() {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"999999"
+							]
+						},
+						"description": "Попытка получения несуществующего пользователя"
+					},
+					"response": []
+				},
+				{
+					"name": "4. GET User by ID (Bad Request)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на некорректный ID",
+									"pm.test(\"Status code is 400\", function() {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"0"
+							]
+						},
+						"description": "Попытка получения с ID=0"
+					},
+					"response": []
+				},
+				{
+					"name": "5. POST Create User (Valid)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Генерируем уникальный логин",
+									"const timestamp = Date.now();",
+									"pm.variables.set(\"uniqueLogin\", \"testuser_\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на создание пользователя",
+									"pm.test(\"Status code is 201\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has user data\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.login).to.eql(pm.variables.get(\"uniqueLogin\"));",
+									"    pm.expect(jsonData.password).to.eql(\"password123\");",
+									"    // Сохраняем ID для последующих тестов",
+									"    pm.collectionVariables.set(\"testUserId\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"login\": \"{{uniqueLogin}}\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Создание нового пользователя"
+					},
+					"response": []
+				},
+				{
+					"name": "6. POST Create User (Invalid)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на создание пользователя с некорректными данными",
+									"pm.test(\"Status code is 400\", function() {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"login\": \"\",\n  \"password\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Попытка создания пользователя с пустыми полями"
+					},
+					"response": []
+				},
+				{
+					"name": "7. PUT Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на обновление пользователя",
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"User data updated\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.login).to.eql(\"updateduser\");",
+									"    pm.expect(jsonData.password).to.eql(\"newpassword456\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"login\": \"updateduser\",\n  \"password\": \"newpassword456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{testUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{testUserId}}"
+							]
+						},
+						"description": "Обновление существующего пользователя"
+					},
+					"response": []
+				},
+				{
+					"name": "8. PUT Update User (Non-existent)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на обновление несуществующего пользователя",
+									"pm.test(\"Status code is 404\", function() {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"login\": \"nonexistent\",\n  \"password\": \"pass\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"999999"
+							]
+						},
+						"description": "Попытка обновления несуществующего пользователя"
+					},
+					"response": []
+				},
+				{
+					"name": "9. DELETE User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на удаление пользователя",
+									"pm.test(\"Status code is 204\", function() {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{testUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{testUserId}}"
+							]
+						},
+						"description": "Удаление пользователя"
+					},
+					"response": []
+				},
+				{
+					"name": "10. DELETE User (Non-existent)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на удаление несуществующего пользователя",
+									"pm.test(\"Status code is 404\", function() {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"999999"
+							]
+						},
+						"description": "Попытка удаления несуществующего пользователя"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tabulated Function",
+			"item": [
+				{
+					"name": "1. GET All Tabulated Functions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tabulated-functions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tabulated-functions"
+							]
+						},
+						"description": "Получение всех табулированных функций"
+					},
+					"response": []
+				},
+				{
+					"name": "2. GET Function by ID (Valid)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Создаем пользователя для теста функций",
+									"const timestamp = Date.now();",
+									"const createUserRequest = {",
+									"    url: pm.variables.get('baseUrl') + '/api/users',",
+									"    method: 'POST',",
+									"    header: {",
+									"        'Content-Type': 'application/json'",
+									"    },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            login: 'funcuser_' + timestamp,",
+									"            password: 'funcpass'",
+									"        })",
+									"    }",
+									"};",
+									"",
+									"pm.sendRequest(createUserRequest, function(err, res) {",
+									"    if (!err) {",
+									"        const userId = res.json().id;",
+									"        pm.variables.set('funcUserId', userId);",
+									"        ",
+									"        // Создаем табулированную функцию",
+									"        const createFuncRequest = {",
+									"            url: pm.variables.get('baseUrl') + '/api/tabulated-functions',",
+									"            method: 'POST',",
+									"            header: {",
+									"                'Content-Type': 'application/json'",
+									"            },",
+									"            body: {",
+									"                mode: 'raw',",
+									"                raw: JSON.stringify({",
+									"                    name: 'Test Function',",
+									"                    data: [1, 2, 3, 4, 5],",
+									"                    derivative: [0, 1, 0, 1, 0],",
+									"                    userId: userId",
+									"                })",
+									"            }",
+									"        };",
+									"        ",
+									"        pm.sendRequest(createFuncRequest, function(err2, res2) {",
+									"            if (!err2) {",
+									"                pm.variables.set('tabFuncId', res2.json().id);",
+									"            }",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has function data\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.name).to.eql('Test Function');",
+									"    pm.expect(jsonData.userId).to.be.a('number');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tabulated-functions/{{tabFuncId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tabulated-functions",
+								"{{tabFuncId}}"
+							]
+						},
+						"description": "Получение табулированной функции по ID"
+					},
+					"response": []
+				},
+				{
+					"name": "3. GET Function by ID (Invalid format)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Тест на некорректный формат ID",
+									"pm.test(\"Status code is 400\", function() {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tabulated-functions/abc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tabulated-functions",
+								"abc"
+							]
+						},
+						"description": "Попытка получения с некорректным ID (строка)"
+					},
+					"response": []
+				},
+				{
+					"name": "4. POST Create Tabulated Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Function created successfully\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.name).to.eql('New Tabulated Function');",
+									"    pm.expect(jsonData.userId).to.eql(1);",
+									"    pm.collectionVariables.set('newTabFuncId', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"New Tabulated Function\",\n  \"data\": [1, 2, 3, 4, 5],\n  \"derivative\": [0.5, 1.0, 1.5, 2.0, 2.5],\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tabulated-functions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tabulated-functions"
+							]
+						},
+						"description": "Создание новой табулированной функции"
+					},
+					"response": []
+				},
+				{
+					"name": "5. POST Create Function (Invalid data)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function() {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"\",\n  \"data\": null,\n  \"derivative\": null,\n  \"userId\": 0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tabulated-functions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tabulated-functions"
+							]
+						},
+						"description": "Попытка создания функции с некорректными данными"
+					},
+					"response": []
+				},
+				{
+					"name": "6. PUT Update Tabulated Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Function updated successfully\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('Updated Function Name');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Function Name\",\n  \"data\": [10, 20, 30],\n  \"derivative\": [1, 2, 3],\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tabulated-functions/{{tabFuncId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tabulated-functions",
+								"{{tabFuncId}}"
+							]
+						},
+						"description": "Обновление существующей функции"
+					},
+					"response": []
+				},
+				{
+					"name": "7. DELETE Tabulated Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function() {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tabulated-functions/{{newTabFuncId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tabulated-functions",
+								"{{newTabFuncId}}"
+							]
+						},
+						"description": "Удаление табулированной функции"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Composite Function",
+			"item": [
+				{
+					"name": "1. GET All Composite Functions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/composite-functions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"composite-functions"
+							]
+						},
+						"description": "Получение всех композитных функций"
+					},
+					"response": []
+				},
+				{
+					"name": "2. GET Composite Function by ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Создаем композитную функцию для теста",
+									"const createCompFuncRequest = {",
+									"    url: pm.variables.get('baseUrl') + '/api/composite-functions',",
+									"    method: 'POST',",
+									"    header: {",
+									"        'Content-Type': 'application/json'",
+									"    },",
+									"    body: {",
+									"        mode: 'raw',",
+									"        raw: JSON.stringify({",
+									"            expression: 'x^2 + sin(x)',",
+									"            userId: 1",
+									"        })",
+									"    }",
+									"};",
+									"",
+									"pm.sendRequest(createCompFuncRequest, function(err, res) {",
+									"    if (!err) {",
+									"        pm.variables.set('compFuncId', res.json().id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has composite function data\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.expression).to.eql('x^2 + sin(x)');",
+									"    pm.expect(jsonData.userId).to.eql(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/composite-functions/{{compFuncId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"composite-functions",
+								"{{compFuncId}}"
+							]
+						},
+						"description": "Получение композитной функции по ID"
+					},
+					"response": []
+				},
+				{
+					"name": "3. POST Create Composite Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Composite function created successfully\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.expression).to.eql('cos(x) * exp(x)');",
+									"    pm.expect(jsonData.userId).to.eql(1);",
+									"    pm.collectionVariables.set('newCompFuncId', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"expression\": \"cos(x) * exp(x)\",\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/composite-functions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"composite-functions"
+							]
+						},
+						"description": "Создание новой композитной функции"
+					},
+					"response": []
+				},
+				{
+					"name": "4. POST Create Composite Function (Invalid)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function() {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"expression\": \"\",\n  \"userId\": 0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/composite-functions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"composite-functions"
+							]
+						},
+						"description": "Попытка создания с некорректными данными"
+					},
+					"response": []
+				},
+				{
+					"name": "5. PUT Update Composite Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Composite function updated\", function() {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.expression).to.eql('updated expression: log(x)');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"expression\": \"updated expression: log(x)\",\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/composite-functions/{{compFuncId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"composite-functions",
+								"{{compFuncId}}"
+							]
+						},
+						"description": "Обновление композитной функции"
+					},
+					"response": []
+				},
+				{
+					"name": "6. DELETE Composite Function",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function() {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/composite-functions/{{newCompFuncId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"composite-functions",
+								"{{newCompFuncId}}"
+							]
+						},
+						"description": "Удаление композитной функции"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "testUserId",
+			"value": ""
+		},
+		{
+			"key": "tabFuncId",
+			"value": ""
+		},
+		{
+			"key": "compFuncId",
+			"value": ""
+		}
+	]
+}
