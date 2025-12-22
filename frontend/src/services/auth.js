@@ -7,15 +7,12 @@ export const authService = {
         throw new Error('Логин и пароль обязательны');
       }
 
-      const body = JSON.stringify({ login, password });
-      console.log('Register - Sending:', body);
-
       const response = await fetch(`${API_BASE}/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: body
+        body: JSON.stringify({ login, password })
       });
 
       console.log('Register - Response status:', response.status);
@@ -26,34 +23,31 @@ export const authService = {
         throw new Error(`Ошибка регистрации: ${text}`);
       }
 
-      const data = JSON.parse(text);
-      console.log('Register success:', data);
-      return data;
+      return JSON.parse(text);
     } catch (e) {
       console.error('Register error:', e.message);
       throw e;
     }
   },
 
-  // ✅ ИСПРАВЛЕННАЯ функция логина - ПРОВЕРЯЕТ с сервером
   login: async (login, password) => {
     try {
       if (!login || !password) {
         throw new Error('Логин и пароль обязательны');
       }
 
-      const token = btoa(`${login}:${password}`);
-
-      // ✅ ПРОВЕРЯЕМ на сервере через Basic Auth
-      const response = await fetch(`${API_BASE}/users`, {
-        method: 'GET',
+      // ✅ Используем новый эндпоинт /login
+      const response = await fetch(`${API_BASE}/users/login`, {
+        method: 'POST',
         headers: {
-          'Authorization': `Basic ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ login, password })
       });
 
       console.log('Login - Response status:', response.status);
+      const text = await response.text();
+      console.log('Login - Response body:', text);
 
       if (response.status === 401 || response.status === 403) {
         throw new Error('Неверные логин или пароль');
@@ -63,7 +57,10 @@ export const authService = {
         throw new Error('Ошибка при входе: ' + response.status);
       }
 
-      // ✅ Если сервер вернул 200 - пользователь существует и пароль верный
+      const data = JSON.parse(text);
+
+      // ✅ Создаём token для хранения
+      const token = btoa(`${login}:${password}`);
       localStorage.setItem('authToken', token);
       localStorage.setItem('username', login);
 
@@ -76,13 +73,8 @@ export const authService = {
   },
 
   logout: () => {
-    try {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('username');
-      console.log('Logout success');
-    } catch (e) {
-      console.error('Logout error:', e.message);
-    }
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
   },
 
   isAuthenticated: () => {

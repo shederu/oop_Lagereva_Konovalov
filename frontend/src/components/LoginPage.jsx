@@ -35,8 +35,8 @@ export default function LoginPage({ onLoginSuccess }) {
       if (!login || !password) {
         throw new Error('Введите логин и пароль');
       }
-      if (password.length < 4) {
-        throw new Error('Пароль должен быть не менее 4 символов');
+      if (password.length < 6) {
+        throw new Error('Пароль должен быть не менее 6 символов');
       }
 
       console.log('Попытка регистрации:', login);
@@ -58,7 +58,7 @@ export default function LoginPage({ onLoginSuccess }) {
 
   return (
     <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h1>Табулированные функции</h1>
+      <h1>Калькулятор онлайн</h1>
 
       <form onSubmit={isRegistering ? handleRegister : handleLogin}>
         <h2>{isRegistering ? 'Регистрация' : 'Вход'}</h2>

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ssau.tk._shederu_._lab1_.dto.TabulatedFunctionDto;
 import ru.ssau.tk._shederu_._lab1_.entities.TabulatedFunctionEntity;
+import ru.ssau.tk._shederu_._lab1_.entities.UserEntity;
 import ru.ssau.tk._shederu_._lab1_.functions.TabulatedFunction;
 import ru.ssau.tk._shederu_._lab1_.io.FunctionsIO;
 import ru.ssau.tk._shederu_._lab1_.repository.UserRepository;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/functions")
+@RequestMapping("/api/tabulatedFunctions")
 public class TabulatedFunctionController {
 
     private static final Logger logger = LoggerFactory.getLogger(TabulatedFunctionController.class);
@@ -35,52 +36,123 @@ public class TabulatedFunctionController {
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('CREATOR', 'VIEWER', 'ADMIN')")
-    public ResponseEntity<Map<String, Object>> getAllUserFunctions(Authentication auth) {
-        Long userId = userRepository.findByLogin(auth.getName()).get().getId();
-        List<TabulatedFunctionDto> functions = functionService.getFunctionsByUserId(userId);
+    /**
+     * ✅ НОВЫЙ ЭНДПОИНТ: Создать функцию из массивов X и Y
+     */
+    @PostMapping("createFromArray")
+    // @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')") // ❌ ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТА
+    public ResponseEntity<Map<String, Object>> createFromArray(
+            @RequestBody Map<String, List<Double>> request,
+            Authentication auth) {
+        try {
+            System.out.println("🔴 DEBUG: auth = " + auth);
+            System.out.println("🔴 DEBUG: auth.getName() = " + auth.getName());
+            System.out.println("🔴 DEBUG: auth.getAuthorities() = " + auth.getAuthorities());
+            System.out.println("🔴 DEBUG: auth.isAuthenticated() = " + auth.isAuthenticated());
+            System.out.println("🔴 DEBUG: request = " + request);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "success");
-        response.put("functions", functions);
-        return ResponseEntity.ok(response);
+            List<Double> xValues = request.get("x");
+            List<Double> yValues = request.get("y");
+
+            System.out.println("🔴 DEBUG: xValues = " + xValues);
+            System.out.println("🔴 DEBUG: yValues = " + yValues);
+
+            if (xValues == null || yValues == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("status", "error", "message", "X и Y не должны быть null"));
+            }
+
+            if (xValues.size() != yValues.size()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("status", "error", "message", "Размеры X и Y должны совпадать"));
+            }
+
+            UserEntity user = userRepository.findByLogin(auth.getName()).orElse(null);
+            System.out.println("🔴 DEBUG: user = " + user);
+
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("status", "error", "message", "Пользователь не найден"));
+            }
+
+            String name = "Функция_" + System.currentTimeMillis();
+            System.out.println("🔴 DEBUG: Calling createFromArray with name = " + name);
+
+            TabulatedFunctionEntity saved = functionService.createFromArray(xValues, yValues, name, user);
+
+            System.out.println("🔴 DEBUG: Function saved successfully with id = " + saved.getId());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("id", saved.getId());
+            response.put("name", saved.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("🔴 DEBUG: Validation error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest()
+                    .body(Map.of("status", "error", "message", e.getMessage()));
+
+        } catch (Exception e) {
+            System.err.println("🔴 DEBUG: Exception caught: " + e.getClass().getName());
+            System.err.println("🔴 DEBUG: Message: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", "Ошибка: " + e.getMessage()));
+        }
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CREATOR', 'VIEWER', 'ADMIN')")
-    public ResponseEntity<TabulatedFunctionDto> getFunctionById(@PathVariable Long id) {
-        TabulatedFunctionDto function = functionService.getFunctionById(id);
-        return function != null ? ResponseEntity.ok(function) : ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/{id}")
+    /**
+     * ✅ НОВЫЙ ЭНДПОИНТ: Создать функцию из математической функции
+     */
+    @PostMapping("createFromFunction")
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    public ResponseEntity<Void> deleteFunction(@PathVariable Long id) {
-        functionService.deleteFunction(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String, Object>> createFromFunction(
+            @RequestBody Map<String, Object> request,
+            Authentication auth) {
+        try {
+            String functionName = (String) request.get("functionName");
+            Double min = ((Number) request.get("min")).doubleValue();
+            Double max = ((Number) request.get("max")).doubleValue();
+            Integer points = ((Number) request.get("points")).intValue();
+
+            UserEntity user = userRepository.findByLogin(auth.getName()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("status", "error", "message", "Пользователь не найден"));
+            }
+
+            TabulatedFunctionEntity saved = functionService.createFromFunction(
+                    functionName, min, max, points, user);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("id", saved.getId());
+            response.put("name", saved.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (Exception e) {
+            logger.error("Error creating function from mathematical function", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "error", "message", "Ошибка создания функции: " + e.getMessage()));
+        }
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<TabulatedFunctionDto>> searchFunctions(@RequestParam String query) {
-        return ResponseEntity.ok(functionService.findByName(query));
-    }
-
-    @PostMapping("/upload")
+    @PostMapping("upload")
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
     public ResponseEntity<Map<String, Object>> uploadFromFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(defaultValue = "Uploaded Function") String name,
             Authentication auth) {
-
         try {
             TabulatedFunction function;
             try (BufferedInputStream is = new BufferedInputStream(file.getInputStream())) {
                 function = FunctionsIO.deserialize(is);
             }
 
-            Long userId = userRepository.findByLogin(auth.getName()).get().getId();
-            TabulatedFunctionEntity saved = functionService.saveFunctionToDb(function, name, userId);
+            UserEntity user = userRepository.findByLogin(auth.getName()).orElse(null);
+            TabulatedFunctionEntity saved = functionService.saveFunctionToDb(function, name, user.getId());
 
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
@@ -90,10 +162,8 @@ public class TabulatedFunctionController {
 
         } catch (Exception e) {
             logger.error("Upload error", e);
-            Map<String, Object> error = new HashMap<>();
-            error.put("status", "error");
-            error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.badRequest()
+                    .body(Map.of("status", "error", "message", e.getMessage()));
         }
     }
 
@@ -109,13 +179,9 @@ public class TabulatedFunctionController {
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"function_" + id + ".bin\"")
                     .body(bos.toByteArray());
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    @GetMapping("/{id}/export")
-    public ResponseEntity<TabulatedFunctionDto> exportFunction(@PathVariable Long id) {
-        return getFunctionById(id);
     }
 }
