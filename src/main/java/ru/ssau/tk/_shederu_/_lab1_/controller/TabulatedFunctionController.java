@@ -30,8 +30,16 @@ public class TabulatedFunctionController {
     private UserRepository userRepository;
 
     /**
-     * ✅ ИСПРАВЛЕНО: Метод теперь принимает 3 аргумента как в Service
-     * Создать функцию из массивов X, Y
+     * ✅ Создать функцию из массивов X, Y
+     * Проверки:
+     * - Name не пусто и не null
+     * - Массивы не пусты
+     * - Минимум 2 точки
+     * - Размеры совпадают
+     * - X числовые значения
+     * - Y числовые значения
+     * - X отсортированы по возрастанию
+     * - Уникальное название функции
      */
     @PostMapping("/createFromArray")
     public ResponseEntity<?> createFromArray(
@@ -46,14 +54,67 @@ public class TabulatedFunctionController {
             List<?> yRaw = (List<?>) request.get("y");
             String name = (String) request.get("name");
 
-            // Конвертируем в List<Double>
-            List<Double> xValues = xRaw.stream()
-                    .map(v -> ((Number) v).doubleValue())
-                    .collect(Collectors.toList());
+            // ✅ Проверка: name не должно быть пусто или null
+            if (name == null || name.trim().isEmpty()) {
+                logger.warn("Function name is empty or null");
+                return ResponseEntity.badRequest().body("Error: Название функции не должно быть пусто");
+            }
 
-            List<Double> yValues = yRaw.stream()
-                    .map(v -> ((Number) v).doubleValue())
-                    .collect(Collectors.toList());
+            // ✅ Проверка: массивы не должны быть пусты
+            if (xRaw == null || yRaw == null || xRaw.isEmpty() || yRaw.isEmpty()) {
+                logger.warn("Empty arrays provided");
+                return ResponseEntity.badRequest().body("Error: X и Y массивы не должны быть пусты");
+            }
+
+            // ✅ Проверка: должно быть не менее 2 точек
+            if (xRaw.size() < 2 || yRaw.size() < 2) {
+                logger.warn("Insufficient points: x.size={}, y.size={}", xRaw.size(), yRaw.size());
+                return ResponseEntity.badRequest().body("Error: Должно быть не менее 2 точек");
+            }
+
+            // ✅ Проверка: размеры массивов должны совпадать
+            if (xRaw.size() != yRaw.size()) {
+                logger.warn("Array sizes mismatch: x.size={}, y.size={}", xRaw.size(), yRaw.size());
+                return ResponseEntity.badRequest().body("Error: Размеры массивов X и Y должны совпадать");
+            }
+
+            // Конвертируем в List<Double>
+            List<Double> xValues = new ArrayList<>();
+            List<Double> yValues = new ArrayList<>();
+
+            for (Object xVal : xRaw) {
+                if (!(xVal instanceof Number)) {
+                    logger.error("Invalid X value type: {}", xVal.getClass());
+                    return ResponseEntity.badRequest().body("Error: X должны быть числовыми значениями");
+                }
+                xValues.add(((Number) xVal).doubleValue());
+            }
+
+            for (Object yVal : yRaw) {
+                if (!(yVal instanceof Number)) {
+                    logger.error("Invalid Y value type: {}", yVal.getClass());
+                    return ResponseEntity.badRequest().body("Error: Y должны быть числовыми значениями");
+                }
+                yValues.add(((Number) yVal).doubleValue());
+            }
+
+            // ✅ Проверка: X должны быть отсортированы
+            for (int i = 1; i < xValues.size(); i++) {
+                if (xValues.get(i) <= xValues.get(i - 1)) {
+                    logger.warn("X values not sorted at index {}: {} <= {}", i, xValues.get(i), xValues.get(i - 1));
+                    return ResponseEntity.badRequest().body("Error: X значения должны быть отсортированы по возрастанию");
+                }
+            }
+
+            // ✅ Проверка: функция с таким названием уже существует
+            List<TabulatedFunctionEntity> existingFunctions = tabulatedFunctionService.getAllByUser(user);
+            boolean nameExists = existingFunctions.stream()
+                    .anyMatch(f -> f.getName() != null && f.getName().equals(name));
+
+            if (nameExists) {
+                logger.warn("Function with name '{}' already exists for user {}", name, username);
+                return ResponseEntity.badRequest().body("Error: Функция с таким названием уже существует");
+            }
 
             logger.debug("Creating function: x={}, y={}, name={}", xValues, yValues, name);
 
@@ -71,8 +132,13 @@ public class TabulatedFunctionController {
     }
 
     /**
-     * ✅ ИСПРАВЛЕНО: Конвертируем параметры через parseDouble/parseInt
-     * Создать функцию из математической функции
+     * ✅ Создать функцию из математической функции
+     * Проверки:
+     * - Название функции не пусто
+     * - Уникальное название функции
+     * - Points целое число (не дробь)
+     * - Points >= 2
+     * - max > min
      */
     @PostMapping("/create-from-function")
     public ResponseEntity<?> createFromFunction(
@@ -84,9 +150,58 @@ public class TabulatedFunctionController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             String functionName = (String) request.get("functionName");
+
+            // ✅ Проверка: functionName не должно быть пусто
+            if (functionName == null || functionName.trim().isEmpty()) {
+                logger.warn("Function name is empty");
+                return ResponseEntity.badRequest().body("Error: Название функции не должно быть пусто");
+            }
+
+            // ✅ Проверка: функция с таким названием уже существует
+            List<TabulatedFunctionEntity> existingFunctions = tabulatedFunctionService.getAllByUser(user);
+            boolean nameExists = existingFunctions.stream()
+                    .anyMatch(f -> f.getName() != null && f.getName().equals(functionName));
+
+            if (nameExists) {
+                logger.warn("Function with name '{}' already exists for user {}", functionName, username);
+                return ResponseEntity.badRequest().body("Error: Функция с таким названием уже существует");
+            }
+
             double min = ((Number) request.get("min")).doubleValue();
             double max = ((Number) request.get("max")).doubleValue();
-            int points = ((Number) request.get("points")).intValue();
+
+            // ✅ Проверка: points должно быть целым числом >= 2
+            Object pointsObj = request.get("points");
+            if (pointsObj == null) {
+                logger.warn("Points is null");
+                return ResponseEntity.badRequest().body("Error: Количество точек не указано");
+            }
+
+            int points;
+            try {
+                double pointsDouble = ((Number) pointsObj).doubleValue();
+                // Проверка на дробь
+                if (pointsDouble != (int) pointsDouble) {
+                    logger.warn("Points is not an integer: {}", pointsDouble);
+                    return ResponseEntity.badRequest().body("Error: Количество точек должно быть целым числом");
+                }
+                points = (int) pointsDouble;
+            } catch (Exception e) {
+                logger.error("Invalid points format", e);
+                return ResponseEntity.badRequest().body("Error: Количество точек должно быть числом");
+            }
+
+            // ✅ Проверка: должно быть не менее 2 точек
+            if (points < 2) {
+                logger.warn("Insufficient points: {}", points);
+                return ResponseEntity.badRequest().body("Error: Должно быть не менее 2 точек");
+            }
+
+            // ✅ Проверка: max > min
+            if (max <= min) {
+                logger.warn("Invalid range: max={}, min={}", max, min);
+                return ResponseEntity.badRequest().body("Error: Максимальное значение должно быть больше минимального");
+            }
 
             logger.debug("Creating from function: name={}, min={}, max={}, points={}",
                     functionName, min, max, points);
@@ -98,6 +213,9 @@ public class TabulatedFunctionController {
             logger.info("Function created: id={}", entity.getId());
             return ResponseEntity.ok(convertToDto(entity));
 
+        } catch (NumberFormatException e) {
+            logger.error("Invalid number format", e);
+            return ResponseEntity.badRequest().body("Error: Неверный формат числа");
         } catch (Exception e) {
             logger.error("Error creating function from function", e);
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
@@ -105,8 +223,7 @@ public class TabulatedFunctionController {
     }
 
     /**
-     * ✅ ИСПРАВЛЕНО: Правильный вызов метода Service
-     * Получить все функции пользователя
+     * ✅ Получить все функции пользователя
      */
     @GetMapping
     public ResponseEntity<?> getAllFunctions(Authentication authentication) {
@@ -133,8 +250,7 @@ public class TabulatedFunctionController {
     }
 
     /**
-     * ✅ ИСПРАВЛЕНО: Правильный вызов метода Service
-     * Получить функцию по ID
+     * ✅ Получить функцию по ID
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> getFunctionById(
@@ -164,8 +280,7 @@ public class TabulatedFunctionController {
     }
 
     /**
-     * ✅ ИСПРАВЛЕНО: Правильный вызов метода Service
-     * Удалить функцию
+     * ✅ Удалить функцию
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFunction(

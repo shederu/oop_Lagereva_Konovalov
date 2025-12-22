@@ -7,7 +7,7 @@ const getHeaders = () => {
   const token = authService.getToken();
   return {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Basic ${token}` }) // ✅ Basic Auth!
+    ...(token && { 'Authorization': `Basic ${token}` })
   };
 };
 
@@ -17,19 +17,43 @@ export const api = {
   /**
    * Создать функцию из массивов X, Y
    */
-  createFromArray: async (xValues, yValues) => {
+  createFromArray: async (xValues, yValues, functionName) => {
     const response = await fetch(`${API_BASE}/tabulatedFunctions/createFromArray`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
-        x: xValues.map(v => parseFloat(v)), // ✅ CONVERT TO DOUBLE!
-        y: yValues.map(v => parseFloat(v))  // ✅ CONVERT TO DOUBLE!
+        x: xValues.map(v => parseFloat(v)),
+        y: yValues.map(v => parseFloat(v)),
+        name: functionName ? functionName.trim() : 'Function'
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
-      throw new Error(errorData.message || 'Ошибка создания функции');
+      let errorMessage = 'Ошибка создания функции';
+
+      try {
+        // Сначала пытаемся распарсить как JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } else {
+          // Если это текст, берём текст как есть
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing error response:', e);
+      }
+
+      console.log('Server error message:', errorMessage);
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -44,14 +68,16 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify({
         functionName,
-        min: parseFloat(min),      // ✅ CONVERT TO DOUBLE!
-        max: parseFloat(max),      // ✅ CONVERT TO DOUBLE!
-        points: parseInt(points)   // ✅ CONVERT TO INT!
+        min: parseFloat(min),
+        max: parseFloat(max),
+        points: parseInt(points)
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      const errorData = await response.json().catch(() => ({
+        message: 'Ошибка сервера'
+      }));
       throw new Error(errorData.message || 'Ошибка создания функции');
     }
 
@@ -114,6 +140,21 @@ export const api = {
     return response.json();
   },
 
+  /**
+   * Получить точки функции для графика
+   */
+  getFunctionPoints: async (id) => {
+    const response = await fetch(`${API_BASE}/tabulatedFunctions/${id}/points`, {
+      headers: getHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка загрузки точек функции');
+    }
+
+    return response.json();
+  },
+
   // ==================== COMPOSITE FUNCTIONS (Operations) ====================
 
   /**
@@ -126,7 +167,9 @@ export const api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      const errorData = await response.json().catch(() => ({
+        message: 'Ошибка сервера'
+      }));
       throw new Error(errorData.message || 'Ошибка добавления');
     }
 
@@ -143,7 +186,9 @@ export const api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      const errorData = await response.json().catch(() => ({
+        message: 'Ошибка сервера'
+      }));
       throw new Error(errorData.message || 'Ошибка вычитания');
     }
 
@@ -160,7 +205,9 @@ export const api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      const errorData = await response.json().catch(() => ({
+        message: 'Ошибка сервера'
+      }));
       throw new Error(errorData.message || 'Ошибка умножения');
     }
 
@@ -177,7 +224,9 @@ export const api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      const errorData = await response.json().catch(() => ({
+        message: 'Ошибка сервера'
+      }));
       throw new Error(errorData.message || 'Ошибка деления');
     }
 
@@ -194,7 +243,9 @@ export const api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      const errorData = await response.json().catch(() => ({
+        message: 'Ошибка сервера'
+      }));
       throw new Error(errorData.message || 'Ошибка дифференцирования');
     }
 
@@ -229,15 +280,17 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify({
         yPrime,
-        y0: parseFloat(y0),      // ✅ CONVERT TO DOUBLE!
-        x0: parseFloat(x0),      // ✅ CONVERT TO DOUBLE!
-        xn: parseFloat(xn),      // ✅ CONVERT TO DOUBLE!
-        h: parseFloat(h)         // ✅ CONVERT TO DOUBLE!
+        y0: parseFloat(y0),
+        x0: parseFloat(x0),
+        xn: parseFloat(xn),
+        h: parseFloat(h)
       })
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      const errorData = await response.json().catch(() => ({
+        message: 'Ошибка сервера'
+      }));
       throw new Error(errorData.message || 'Ошибка решения ОДУ');
     }
 
