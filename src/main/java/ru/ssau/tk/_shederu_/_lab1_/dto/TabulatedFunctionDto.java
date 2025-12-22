@@ -1,45 +1,69 @@
 package ru.ssau.tk._shederu_._lab1_.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
 public class TabulatedFunctionDto {
     private Long id;
     private String name;
-    @JsonProperty("data")
-    private String data;
-    @JsonProperty("derivative")
-    private String derivative;
-    private Long userId;
+    private List<Double> xValues;
+    private List<Double> yValues;
+    private List<Double> derivativeYValues;
 
     public TabulatedFunctionDto() {}
 
-    public TabulatedFunctionDto(String name, String data, String derivative, Long userId) {
-        this.name = name;
-        this.data = data;
-        this.derivative = derivative;
-        this.userId = userId;
-    }
-
-    public TabulatedFunctionDto(Long id, String name, String data, String derivative, Long userId) {
+    public TabulatedFunctionDto(Long id, String name, List<Double> xValues, List<Double> yValues) {
         this.id = id;
         this.name = name;
-        this.data = data;
-        this.derivative = derivative;
-        this.userId = userId;
+        this.xValues = xValues;
+        this.yValues = yValues;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public TabulatedFunctionDto(Long id, String name, List<Double> xValues, List<Double> yValues, List<Double> derivativeYValues) {
+        this.id = id;
+        this.name = name;
+        this.xValues = xValues;
+        this.yValues = yValues;
+        this.derivativeYValues = derivativeYValues;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
 
-    public String getData() { return data; }
-    public void setData(String data) { this.data = data; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getDerivative() { return derivative; }
-    public void setDerivative(String derivative) { this.derivative = derivative; }
+    public String getName() {
+        return name;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Double> getXValues() {
+        return xValues;
+    }
+
+    public void setXValues(List<Double> xValues) {
+        this.xValues = xValues;
+    }
+
+    public List<Double> getYValues() {
+        return yValues;
+    }
+
+    public void setYValues(List<Double> yValues) {
+        this.yValues = yValues;
+    }
+
+    public List<Double> getDerivativeYValues() {
+        return derivativeYValues;
+    }
+
+    public void setDerivativeYValues(List<Double> derivativeYValues) {
+        this.derivativeYValues = derivativeYValues;
+    }
 }

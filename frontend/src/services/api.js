@@ -6,31 +6,52 @@ const getHeaders = () => {
   const token = authService.getToken();
   return {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Basic ${token}` })
+    ...(token && { 'Authorization': `Bearer ${token}` })
   };
 };
 
 export const api = {
-  createFromArray: async (x, y) => {
-    const response = await fetch(`${API_BASE}/tabulatedFunctions/createFromArray`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ x, y })
-    });
-    if (!response.ok) throw new Error('Ошибка создания функции');
-    return response.json();
-  },
+  // ==================== TABULATED FUNCTIONS ====================
 
+  /**
+   * Создать функцию из массивов X, Y
+   */
+ createFromArray: async (xValues, yValues, functionName) => {
+     const response = await fetch(`${API_BASE}/tabulatedFunctions/createFromArray`, {
+         method: 'POST',
+         headers: getHeaders(),
+         body: JSON.stringify({
+             x: xValues,    // ✅ Правильно - x
+             y: yValues     // ✅ Правильно - y
+         })
+     });
+     if (!response.ok) {
+         const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+         throw new Error(errorData.message || 'Ошибка создания функции');
+     }
+     return response.json();
+ },
+
+
+  /**
+   * Создать функцию из другой MathFunction
+   */
   createFromFunction: async (functionName, min, max, points) => {
-    const response = await fetch(`${API_BASE}/tabulatedFunctions/createFromFunction`, {
+    const response = await fetch(`${API_BASE}/tabulatedFunctions/create-from-function`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ functionName, min, max, points })
     });
-    if (!response.ok) throw new Error('Ошибка создания функции');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Ошибка сервера' }));
+      throw new Error(errorData.message || 'Ошибка создания функции');
+    }
     return response.json();
   },
 
+  /**
+   * Получить все функции пользователя
+   */
   getFunctions: async () => {
     const response = await fetch(`${API_BASE}/tabulatedFunctions`, {
       headers: getHeaders()
@@ -38,6 +59,31 @@ export const api = {
     if (!response.ok) throw new Error('Ошибка загрузки функций');
     return response.json();
   },
+
+  /**
+   * Получить функцию по ID
+   */
+  getFunctionById: async (id) => {
+    const response = await fetch(`${API_BASE}/tabulatedFunctions/${id}`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Функция не найдена');
+    return response.json();
+  },
+
+  /**
+   * Удалить функцию
+   */
+  deleteFunction: async (id) => {
+    const response = await fetch(`${API_BASE}/tabulatedFunctions/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Ошибка удаления функции');
+    return response.json();
+  },
+
+  // ==================== COMPOSITE FUNCTIONS (Operations) ====================
 
   add: async (id1, id2) => {
     const response = await fetch(`${API_BASE}/compositeFunctions/add?id1=${id1}&id2=${id2}`, {

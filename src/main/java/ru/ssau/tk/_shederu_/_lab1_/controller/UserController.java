@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.ssau.tk._shederu_._lab1_.dto.UserDto;
 import ru.ssau.tk._shederu_._lab1_.dto.UserRegistrationDto;
@@ -29,6 +30,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;  // ✅ ДОБАВЬ ЭТУ СТРОКУ
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserRegistrationDto dto) {
@@ -66,6 +70,51 @@ public class UserController {
         }
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@RequestBody UserRegistrationDto dto) {
+        try {
+            System.out.println("=== LOGIN ATTEMPT ===");
+            System.out.println("Login: " + dto.getLogin());
+            System.out.println("Password: " + dto.getPassword());
+
+            UserEntity user = userService.findByLogin(dto.getLogin());
+
+            if (user == null) {
+                System.out.println("User not found!");
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "Пользователь не найден");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+
+            System.out.println("User found: " + user.getLogin());
+            System.out.println("Stored password hash: " + user.getPassword());
+            System.out.println("Input password: " + dto.getPassword());
+
+            // Проверяем пароль
+            boolean matches = passwordEncoder.matches(dto.getPassword(), user.getPassword());
+            System.out.println("Password matches: " + matches);
+
+            if (!matches) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "Неверный пароль");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Вход успешен");
+            response.put("id", user.getId());
+            response.put("login", user.getLogin());
+
+            System.out.println("Login successful!");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 
 
     @GetMapping("/me")
@@ -174,8 +223,7 @@ public class UserController {
     private UserEntity convertDtoToEntity(UserDto dto) {
         UserEntity entity = new UserEntity();
         entity.setLogin(dto.getLogin());
-        entity.setPassword(dto.getPassword());  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+        entity.setPassword(dto.getPassword());
         return entity;
     }
-
 }

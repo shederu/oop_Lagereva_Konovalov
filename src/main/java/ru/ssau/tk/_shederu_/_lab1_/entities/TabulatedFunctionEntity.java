@@ -1,24 +1,21 @@
 package ru.ssau.tk._shederu_._lab1_.entities;
 
 import jakarta.persistence.*;
-import java.util.Arrays;
-import java.util.Objects;
 
 @Entity
 @Table(name = "tabulated_function")
 public class TabulatedFunctionEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tab_func_seq")
-    @SequenceGenerator(name = "tab_func_seq", sequenceName = "tabulated_function_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false, columnDefinition = "BYTEA")
+    @Column(name = "data", columnDefinition = "BYTEA")
     private byte[] data;
 
-    @Column(nullable = false, columnDefinition = "BYTEA")
+    @Column(name = "derivative", columnDefinition = "BYTEA")
     private byte[] derivative;
 
     @Column(name = "user_id", nullable = false)
@@ -28,94 +25,80 @@ public class TabulatedFunctionEntity {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private UserEntity user;
 
+    // ======================== CONSTRUCTORS ========================
+
     public TabulatedFunctionEntity() {}
 
-    public TabulatedFunctionEntity(String name, byte[] data, byte[] derivative, Long userId) {
+    public TabulatedFunctionEntity(String name, byte[] data, byte[] derivative, UserEntity user) {
         this.name = name;
         this.data = data;
         this.derivative = derivative;
-        this.userId = userId;
+        this.user = user;
+        if (user != null) {
+            this.userId = user.getId();
+        }
     }
 
-    public TabulatedFunctionEntity(Long id, String name, byte[] data, byte[] derivative, Long userId, UserEntity user) {
-        this.id = id;
-        this.name = name;
-        this.data = data;
-        this.derivative = derivative;
-        this.userId = userId;
-        this.user = user;
-    }
+    // ======================== GETTERS & SETTERS ========================
 
     public Long getId() {
         return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    public byte[] getDerivative() {
-        return derivative;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public UserEntity getUser() {
-        return user;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
+    }
+
+    public byte[] getData() {
+        return data;
     }
 
     public void setData(byte[] data) {
         this.data = data;
     }
 
+    public byte[] getDerivative() {
+        return derivative;
+    }
+
     public void setDerivative(byte[] derivative) {
         this.derivative = derivative;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     public void setUserId(Long userId) {
         this.userId = userId;
     }
 
+    public UserEntity getUser() {
+        return user;
+    }
+
     public void setUser(UserEntity user) {
         this.user = user;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TabulatedFunctionEntity)) return false;
-        TabulatedFunctionEntity that = (TabulatedFunctionEntity) o;
-        return Objects.equals(id, that.id)
-                && Objects.equals(name, that.name)
-                && Arrays.equals(data, that.data)
-                && Arrays.equals(derivative, that.derivative)
-                && Objects.equals(userId, that.userId);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(id, name, userId);
-        result = 31 * result + Arrays.hashCode(data);
-        result = 31 * result + Arrays.hashCode(derivative);
-        return result;
+        if (user != null) {
+            this.userId = user.getId();
+        }
     }
 
     @Override
     public String toString() {
-        return "TabulatedFunctionEntity{" + "id=" + id + ", name='" + name + '\'' + ", userId=" + userId + ", dataLength=" + (data != null ? data.length : 0) + ", derivativeLength=" + (derivative != null ? derivative.length : 0) + '}';
+        return "TabulatedFunctionEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", userId=" + userId +
+                ", user=" + (user != null ? user.getLogin() : null) +
+                '}';
     }
 }

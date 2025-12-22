@@ -28,12 +28,19 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TabulatedFunctionEntity> tabulatedFunctions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CompositeFunctionEntity> compositeFunctions = new ArrayList<>();
+
+    // ======================== CONSTRUCTORS ========================
+
     public UserEntity() {}
 
     public UserEntity(String login, String password) {
         this.login = login;
         this.password = password;
     }
+
+    // ======================== GETTERS & SETTERS ========================
 
     public Long getId() {
         return id;
@@ -75,9 +82,119 @@ public class UserEntity {
         this.tabulatedFunctions = tabulatedFunctions;
     }
 
+    public List<CompositeFunctionEntity> getCompositeFunctions() {
+        return compositeFunctions;
+    }
+
+    public void setCompositeFunctions(List<CompositeFunctionEntity> compositeFunctions) {
+        this.compositeFunctions = compositeFunctions;
+    }
+
+    // ======================== UTILITY METHODS ========================
+
+    /**
+     * Добавить табулированную функцию пользователю
+     */
+    public void addTabulatedFunction(TabulatedFunctionEntity function) {
+        if (function != null) {
+            tabulatedFunctions.add(function);
+            function.setUser(this);
+        }
+    }
+
+    /**
+     * Удалить табулированную функцию у пользователя
+     */
+    public void removeTabulatedFunction(TabulatedFunctionEntity function) {
+        if (function != null) {
+            tabulatedFunctions.remove(function);
+            function.setUser(null);
+        }
+    }
+
+    /**
+     * Добавить композитную функцию пользователю
+     */
+    public void addCompositeFunction(CompositeFunctionEntity function) {
+        if (function != null) {
+            compositeFunctions.add(function);
+            function.setUser(this);
+        }
+    }
+
+    /**
+     * Удалить композитную функцию у пользователя
+     */
+    public void removeCompositeFunction(CompositeFunctionEntity function) {
+        if (function != null) {
+            compositeFunctions.remove(function);
+            function.setUser(null);
+        }
+    }
+
+    /**
+     * Получить количество всех функций пользователя
+     */
+    public int getTotalFunctionCount() {
+        return tabulatedFunctions.size() + compositeFunctions.size();
+    }
+
+    /**
+     * Проверить, существует ли функция у пользователя по имени
+     */
+    public boolean hasTabulatedFunction(String name) {
+        return tabulatedFunctions.stream()
+                .anyMatch(f -> f.getName() != null && f.getName().equals(name));
+    }
+
+    /**
+     * Найти табулированную функцию по имени
+     */
+    public Optional<TabulatedFunctionEntity> findTabulatedFunction(String name) {
+        return tabulatedFunctions.stream()
+                .filter(f -> f.getName() != null && f.getName().equals(name))
+                .findFirst();
+    }
+
+    /**
+     * Найти композитную функцию по выражению
+     */
+    public Optional<CompositeFunctionEntity> findCompositeFunction(String expression) {
+        return compositeFunctions.stream()
+                .filter(f -> f.getExpression() != null && f.getExpression().equals(expression))
+                .findFirst();
+    }
+
+    // ======================== EQUALS & HASHCODE ========================
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserEntity that = (UserEntity) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        return login != null ? login.equals(that.login) : that.login == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (login != null ? login.hashCode() : 0);
+        return result;
+    }
+
+    // ======================== TO STRING ========================
+
     @Override
     public String toString() {
-        return "UserEntity{" + "id=" + id + ", login='" + login + '\'' +
-                ", roles=" + roles + '}';
+        return "UserEntity{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", roles=" + roles +
+                ", tabulatedFunctions=" + tabulatedFunctions.size() +
+                ", compositeFunctions=" + compositeFunctions.size() +
+                '}';
     }
 }

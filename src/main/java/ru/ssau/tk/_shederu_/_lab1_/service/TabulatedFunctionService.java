@@ -4,198 +4,258 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.ssau.tk._shederu_._lab1_.dto.TabulatedFunctionDto;
 import ru.ssau.tk._shederu_._lab1_.entities.TabulatedFunctionEntity;
-import ru.ssau.tk._shederu_._lab1_.repository.TabulatedFunctionRepository;
+import ru.ssau.tk._shederu_._lab1_.entities.UserEntity;
+import ru.ssau.tk._shederu_._lab1_.functions.ArrayTabulatedFunction;
 import ru.ssau.tk._shederu_._lab1_.functions.TabulatedFunction;
-import ru.ssau.tk._shederu_._lab1_.functions.factory.ArrayTabulatedFunctionFactory;
-import ru.ssau.tk._shederu_._lab1_.functions.factory.TabulatedFunctionFactory;
-import ru.ssau.tk._shederu_._lab1_.io.FunctionsIO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ru.ssau.tk._shederu_._lab1_.repository.TabulatedFunctionRepository;
+import ru.ssau.tk._shederu_._lab1_.util.DerivativeCalculator;
 
 import java.io.*;
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class TabulatedFunctionService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TabulatedFunctionService.class);
-
     @Autowired
-    private TabulatedFunctionRepository tabulatedFunctionRepository;
+    private TabulatedFunctionRepository repository;
 
-    private static final TabulatedFunctionFactory factory = new ArrayTabulatedFunctionFactory();
-
-    public TabulatedFunctionDto entityToDto(TabulatedFunctionEntity entity) {
-        return new TabulatedFunctionDto(
-                entity.getId(),
-                entity.getName(),
-                Base64.getEncoder().encodeToString(entity.getData()),
-                Base64.getEncoder().encodeToString(entity.getDerivative()),
-                entity.getUserId()
-        );
-    }
-
-    private TabulatedFunctionEntity dtoToEntity(TabulatedFunctionDto dto) {
-        byte[] data = Base64.getDecoder().decode(dto.getData());
-        byte[] derivative = Base64.getDecoder().decode(dto.getDerivative());
-        return new TabulatedFunctionEntity(dto.getName(), data, derivative, dto.getUserId());
-    }
-
-    public String serializeFunctionToBase64(TabulatedFunction function) {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             BufferedOutputStream out = new BufferedOutputStream(bos)) {
-
-            FunctionsIO.serialize(out, function);
-            out.flush();
-
-            byte[] serialized = bos.toByteArray();
-            return Base64.getEncoder().encodeToString(serialized);
-
-        } catch (IOException e) {
-            logger.error("Error serializing function to Base64", e);
-            throw new RuntimeException("Error serializing function", e);
-        }
-    }
-
-    public TabulatedFunction deserializeFunctionFromBase64(String base64Data) {
+    /**
+     * ✅ НОВЫЙ МЕТОД: Создать функцию из массивов X и Y
+     */
+    public TabulatedFunctionEntity createFromArray(
+            List<Double> xValues,
+            List<Double> yValues,
+            String name,
+            UserEntity user) {
+        validateInput(xValues, yValues);
         try {
-            byte[] serialized = Base64.getDecoder().decode(base64Data);
+            List<Double> derivativeYValues = DerivativeCalculator.calculateDerivative(xValues, yValues);
+            TabulatedFunctionEntity entity = new TabulatedFunctionEntity();
+            entity.setName(name != null && !name.trim().isEmpty() ? name : "Функция_" + System.currentTimeMillis());
+            entity.setData(serializeDoubleList(yValues));
+            entity.setDerivative(serializeDoubleList(derivativeYValues));
+            entity.setUser(user);
+            return repository.save(entity);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка сериализации данных: " + e.getMessage(), e);
+        }
+    }
 
-            try (ByteArrayInputStream bis = new ByteArrayInputStream(serialized);
-                 BufferedInputStream in = new BufferedInputStream(bis)) {
+    /**
+     * Получить функцию по ID с десериализацией данных
+     */
+    public TabulatedFunctionEntity getById(Long id, UserEntity user) {
+        Optional<TabulatedFunctionEntity> optional = repository.findByIdAndUser(id, user);
+        return optional.orElse(null);
+    }
 
-                return FunctionsIO.deserialize(in);
+    /**
+     * Получить функцию по ID (для OperationsController)
+     */
+    public TabulatedFunctionEntity getById(Long id) {
+        Optional<TabulatedFunctionEntity> optional = repository.findById(id);
+        return optional.orElse(null);
+    }
 
+    /**
+     * Получить все функции пользователя
+     */
+    public List<TabulatedFunctionEntity> getAllByUser(UserEntity user) {
+        return repository.findByUser(user);
+    }
+
+    /**
+     * Обновить функцию
+     */
+    public TabulatedFunctionEntity update(Long id, List<Double> xValues, List<Double> yValues, UserEntity user) {
+        validateInput(xValues, yValues);
+        Optional<TabulatedFunctionEntity> optional = repository.findByIdAndUser(id, user);
+        if (optional.isPresent()) {
+            try {
+                TabulatedFunctionEntity entity = optional.get();
+                List<Double> derivativeYValues = DerivativeCalculator.calculateDerivative(xValues, yValues);
+                entity.setData(serializeDoubleList(yValues));
+                entity.setDerivative(serializeDoubleList(derivativeYValues));
+                return repository.save(entity);
+            } catch (IOException e) {
+                throw new RuntimeException("Ошибка сериализации данных: " + e.getMessage(), e);
             }
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error("Error deserializing function from Base64", e);
-            throw new RuntimeException("Error deserializing function", e);
+        }
+        return null;
+    }
+
+    /**
+     * Удалить функцию
+     */
+    public void delete(Long id, UserEntity user) {
+        Optional<TabulatedFunctionEntity> optional = repository.findByIdAndUser(id, user);
+        if (optional.isPresent()) {
+            repository.delete(optional.get());
         }
     }
 
+    /**
+     * ✅ НОВЫЙ МЕТОД: Загрузить функцию из БД в объект TabulatedFunction
+     */
+    public TabulatedFunction loadFunctionFromDb(Long id) {
+        TabulatedFunctionEntity entity = getById(id);
+        if (entity == null) {
+            throw new RuntimeException("Функция с id " + id + " не найдена");
+        }
+
+        try {
+            List<Double> yValues = deserializeDoubleList(entity.getData());
+
+            double[] xArray = new double[yValues.size()];
+            double[] yArray = new double[yValues.size()];
+
+            for (int i = 0; i < yValues.size(); i++) {
+                xArray[i] = (double) i;
+                yArray[i] = yValues.get(i);
+            }
+
+            return new ArrayTabulatedFunction(xArray, yArray);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка десериализации функции: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * ✅ НОВЫЙ МЕТОД: Сохранить функцию в БД
+     */
     public TabulatedFunctionEntity saveFunctionToDb(TabulatedFunction function, String name, Long userId) {
-        String base64Data = serializeFunctionToBase64(function);
+        try {
+            double[] xArray = new double[function.getCount()];
+            double[] yArray = new double[function.getCount()];
 
-        TabulatedFunctionEntity entity = new TabulatedFunctionEntity();
-        entity.setName(name);
-        entity.setData(Base64.getDecoder().decode(base64Data)); // Сохраняем raw байты в БД
-        entity.setDerivative(new byte[0]); // Пока пустая производная
-        entity.setUserId(userId);
+            for (int i = 0; i < function.getCount(); i++) {
+                xArray[i] = function.getX(i);
+                yArray[i] = function.getY(i);
+            }
 
-        TabulatedFunctionEntity saved = tabulatedFunctionRepository.save(entity);
-        logger.info("Function saved to DB: id={}, name={}", saved.getId(), saved.getName());
+            List<Double> xValues = new ArrayList<>();
+            List<Double> yValues = new ArrayList<>();
+            for (double x : xArray) xValues.add(x);
+            for (double y : yArray) yValues.add(y);
 
-        return saved;
+            List<Double> derivativeYValues = DerivativeCalculator.calculateDerivative(xValues, yValues);
+
+            TabulatedFunctionEntity entity = new TabulatedFunctionEntity();
+            entity.setName(name != null && !name.trim().isEmpty() ? name : "Результат_" + System.currentTimeMillis());
+            entity.setData(serializeDoubleList(yValues));
+            entity.setDerivative(serializeDoubleList(derivativeYValues));
+            entity.setUserId(userId);
+
+            return repository.save(entity);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка сохранения функции: " + e.getMessage(), e);
+        }
     }
 
-    public TabulatedFunction loadFunctionFromDb(Long functionId) {
-        TabulatedFunctionEntity entity = tabulatedFunctionRepository.findById(functionId)
-                .orElseThrow(() -> {
-                    logger.error("Function not found: {}", functionId);
-                    return new IllegalArgumentException("Function not found: " + functionId);
-                });
-
-        String base64Data = Base64.getEncoder().encodeToString(entity.getData());
-        return deserializeFunctionFromBase64(base64Data);
-    }
-
+    /**
+     * ✅ НОВЫЙ МЕТОД: Конвертировать функцию в DTO
+     */
     public TabulatedFunctionDto functionToDto(TabulatedFunction function, String name, Long userId) {
-        String base64Data = serializeFunctionToBase64(function);
+        try {
+            List<Double> xValues = new ArrayList<>();
+            List<Double> yValues = new ArrayList<>();
 
-        return new TabulatedFunctionDto(
-                null, // ID = null (т.к. еще не сохранена в БД)
-                name != null ? name : "Result",
-                base64Data,
-                "", // Производная пока пустая
-                userId != null ? userId : -1L
-        );
-    }
-    public List<TabulatedFunctionDto> getFunctionsByUserId(Long userId) {
-        List<TabulatedFunctionEntity> entities = tabulatedFunctionRepository.findByUserId(userId);
-        logger.debug("Retrieved {} functions for user {}", entities.size(), userId);
-        return entities.stream()
-                .map(this::entityToDto)
-                .collect(Collectors.toList());
-    }
+            for (int i = 0; i < function.getCount(); i++) {
+                xValues.add(function.getX(i));
+                yValues.add(function.getY(i));
+            }
 
-    public TabulatedFunctionDto getFunctionById(Long id) {
-        logger.debug("Fetching function with ID: {}", id);
-        return tabulatedFunctionRepository.findById(id)
-                .map(entity -> {
-                    logger.debug("Function found: {}", entity.getName());
-                    return entityToDto(entity);
-                })
-                .orElse(null);
-    }
+            TabulatedFunctionDto dto = new TabulatedFunctionDto();
+            dto.setName(name);
+            dto.setXValues(xValues);
+            dto.setYValues(yValues);
 
-    public TabulatedFunctionDto createFunction(TabulatedFunctionDto functionDto) {
-        if (functionDto == null || functionDto.getData() == null || functionDto.getData().isEmpty()) {
-            logger.warn("Invalid function DTO provided for creation");
-            throw new IllegalArgumentException("Function data cannot be empty");
+            return dto;
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка конвертации функции: " + e.getMessage(), e);
         }
-
-        TabulatedFunctionEntity entity = dtoToEntity(functionDto);
-        TabulatedFunctionEntity saved = tabulatedFunctionRepository.save(entity);
-
-        logger.info("Function created: id={}, name={}", saved.getId(), saved.getName());
-        return entityToDto(saved);
     }
 
-    public TabulatedFunctionDto updateFunction(Long id, TabulatedFunctionDto functionDto) {
-        if (functionDto == null || functionDto.getData() == null || functionDto.getData().isEmpty()) {
-            logger.warn("Invalid function DTO provided for update");
-            throw new IllegalArgumentException("Function data cannot be empty");
+    /**
+     * ✅ НОВЫЙ МЕТОД: Создать функцию из математической функции
+     */
+    public TabulatedFunctionEntity createFromFunction(
+            String functionName,
+            Double min,
+            Double max,
+            Integer points,
+            UserEntity user) {
+        try {
+            List<Double> xValues = new ArrayList<>();
+            List<Double> yValues = new ArrayList<>();
+
+            double step = (max - min) / (points - 1);
+            for (int i = 0; i < points; i++) {
+                double x = min + i * step;
+                xValues.add(x);
+                // Здесь подставь нужную функцию вместо Math.sin
+                yValues.add(Math.sin(x));
+            }
+
+            return createFromArray(xValues, yValues, functionName, user);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка создания функции: " + e.getMessage(), e);
         }
-
-        return tabulatedFunctionRepository.findById(id)
-                .map(existing -> {
-                    byte[] data = Base64.getDecoder().decode(functionDto.getData());
-                    byte[] derivative = Base64.getDecoder().decode(
-                            functionDto.getDerivative() != null && !functionDto.getDerivative().isEmpty()
-                                    ? functionDto.getDerivative()
-                                    : Base64.getEncoder().encodeToString(new byte[0])
-                    );
-
-                    existing.setName(functionDto.getName());
-                    existing.setData(data);
-                    existing.setDerivative(derivative);
-
-                    TabulatedFunctionEntity updated = tabulatedFunctionRepository.save(existing);
-                    logger.info("Function updated: id={}", id);
-
-                    return entityToDto(updated);
-                })
-                .orElseThrow(() -> {
-                    logger.error("Function not found for update: {}", id);
-                    return new IllegalArgumentException("Function not found: " + id);
-                });
     }
 
-    public void deleteFunction(Long id) {
-        if (!tabulatedFunctionRepository.existsById(id)) {
-            logger.warn("Attempt to delete non-existent function: {}", id);
-            throw new IllegalArgumentException("Function not found: " + id);
+    /**
+     * Сериализует список Double в byte[]
+     */
+    private byte[] serializeDoubleList(List<Double> values) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        dos.writeInt(values.size());
+        for (Double value : values) {
+            dos.writeDouble(value);
         }
-
-        tabulatedFunctionRepository.deleteById(id);
-        logger.info("Function deleted: id={}", id);
+        dos.flush();
+        return baos.toByteArray();
     }
 
-    public List<TabulatedFunctionDto> findByName(String name) {
-        logger.debug("Searching functions by name: {}", name);
-        return tabulatedFunctionRepository.findByNameContainingIgnoreCase(name)
-                .stream()
-                .map(this::entityToDto)
-                .collect(Collectors.toList());
+    /**
+     * Десериализует byte[] обратно в List
+     */
+    public List<Double> deserializeDoubleList(byte[] data) throws IOException {
+        if (data == null || data.length == 0) {
+            return new ArrayList<>();
+        }
+        ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        DataInputStream dis = new DataInputStream(bais);
+        int size = dis.readInt();
+        List<Double> values = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            values.add(dis.readDouble());
+        }
+        return values;
     }
 
-    public List<TabulatedFunctionDto> getAllFunctions() {
-        logger.debug("Fetching all functions");
-        return tabulatedFunctionRepository.findAll()
-                .stream()
-                .map(this::entityToDto)
-                .collect(Collectors.toList());
+    /**
+     * Валидация входных данных
+     */
+    private void validateInput(List<Double> xValues, List<Double> yValues) {
+        if (xValues == null || yValues == null) {
+            throw new IllegalArgumentException("X и Y не должны быть null");
+        }
+        if (xValues.isEmpty() || yValues.isEmpty()) {
+            throw new IllegalArgumentException("X и Y не должны быть пустыми");
+        }
+        if (xValues.size() != yValues.size()) {
+            throw new IllegalArgumentException("Размеры X и Y должны совпадать");
+        }
+        for (int i = 1; i < xValues.size(); i++) {
+            if (xValues.get(i) <= xValues.get(i - 1)) {
+                throw new IllegalArgumentException(
+                        String.format("X не отсортирован: позиция %d, значение %.2f <= %.2f",
+                                i, xValues.get(i), xValues.get(i - 1))
+                );
+            }
+        }
     }
 }

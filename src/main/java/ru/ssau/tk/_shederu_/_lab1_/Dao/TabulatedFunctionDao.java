@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class TabulatedFunctionDao {
+
     private static final Logger logger = LoggerFactory.getLogger(TabulatedFunctionDao.class);
     private final DataSourceProvider dataSourceProvider;
 
@@ -23,7 +24,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -45,7 +45,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, name);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -68,7 +67,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setLong(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -88,7 +86,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, name);
             stmt.setLong(2, userId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -113,7 +110,6 @@ public class TabulatedFunctionDao {
         try (Connection conn = dataSourceProvider.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-
             while (rs.next()) {
                 functions.add(mapResultSetToEntity(rs));
             }
@@ -130,7 +126,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
             stmt.setString(1, function.getName());
             stmt.setBytes(2, function.getData());
             stmt.setBytes(3, function.getDerivative());
@@ -158,7 +153,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setBytes(1, data);
             stmt.setLong(2, id);
 
@@ -171,8 +165,8 @@ public class TabulatedFunctionDao {
             return affectedRows > 0;
         } catch (SQLException e) {
             logger.error("Ошибка обновления data для id: {}", id, e);
+            return false;
         }
-        return false;
     }
 
     public boolean updateDerivative(Long id, byte[] derivative) {
@@ -181,7 +175,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setBytes(1, derivative);
             stmt.setLong(2, id);
 
@@ -194,8 +187,8 @@ public class TabulatedFunctionDao {
             return affectedRows > 0;
         } catch (SQLException e) {
             logger.error("Ошибка обновления derivative для id: {}", id, e);
+            return false;
         }
-        return false;
     }
 
     public boolean updateName(Long id, String name) {
@@ -204,7 +197,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, name);
             stmt.setLong(2, id);
 
@@ -217,8 +209,8 @@ public class TabulatedFunctionDao {
             return affectedRows > 0;
         } catch (SQLException e) {
             logger.error("Ошибка обновления имени для id: {}", id, e);
+            return false;
         }
-        return false;
     }
 
     public boolean updateUserId(Long id, Long newUserId) {
@@ -227,7 +219,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setLong(1, newUserId);
             stmt.setLong(2, id);
 
@@ -240,8 +231,8 @@ public class TabulatedFunctionDao {
             return affectedRows > 0;
         } catch (SQLException e) {
             logger.error("Ошибка передачи функции id: {} пользователю: {}", id, newUserId, e);
+            return false;
         }
-        return false;
     }
 
     public boolean deleteById(Long id) {
@@ -250,7 +241,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setLong(1, id);
 
             int affectedRows = stmt.executeUpdate();
@@ -262,8 +252,8 @@ public class TabulatedFunctionDao {
             return affectedRows > 0;
         } catch (SQLException e) {
             logger.error("Ошибка удаления функции с id: {}", id, e);
+            return false;
         }
-        return false;
     }
 
     public boolean deleteByName(String name) {
@@ -272,7 +262,6 @@ public class TabulatedFunctionDao {
 
         try (Connection conn = dataSourceProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, name);
 
             int affectedRows = stmt.executeUpdate();
@@ -284,10 +273,14 @@ public class TabulatedFunctionDao {
             return affectedRows > 0;
         } catch (SQLException e) {
             logger.error("Ошибка удаления функции: {}", name, e);
+            return false;
         }
-        return false;
     }
 
+    /**
+     * ✅ Преобразование ResultSet в Entity
+     * Использует методы getUserId() и setUserId()
+     */
     private TabulatedFunctionEntity mapResultSetToEntity(ResultSet rs) throws SQLException {
         TabulatedFunctionEntity function = new TabulatedFunctionEntity();
         function.setId(rs.getLong("id"));
