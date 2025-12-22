@@ -1,14 +1,15 @@
 package ru.ssau.tk._shederu_._lab1_.entities;
 
 import jakarta.persistence.*;
+
 import java.util.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "\"user\"") // таблица из create_tables.sql
 public class UserEntity {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", sequenceName = "users_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
@@ -17,6 +18,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
 
+    // Роли, если нужны – оставлены как в оригинале, но с типами
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(
             name = "user_roles",
@@ -33,7 +35,8 @@ public class UserEntity {
 
     // ======================== CONSTRUCTORS ========================
 
-    public UserEntity() {}
+    public UserEntity() {
+    }
 
     public UserEntity(String login, String password) {
         this.login = login;
@@ -92,9 +95,6 @@ public class UserEntity {
 
     // ======================== UTILITY METHODS ========================
 
-    /**
-     * Добавить табулированную функцию пользователю
-     */
     public void addTabulatedFunction(TabulatedFunctionEntity function) {
         if (function != null) {
             tabulatedFunctions.add(function);
@@ -102,9 +102,6 @@ public class UserEntity {
         }
     }
 
-    /**
-     * Удалить табулированную функцию у пользователя
-     */
     public void removeTabulatedFunction(TabulatedFunctionEntity function) {
         if (function != null) {
             tabulatedFunctions.remove(function);
@@ -112,9 +109,6 @@ public class UserEntity {
         }
     }
 
-    /**
-     * Добавить композитную функцию пользователю
-     */
     public void addCompositeFunction(CompositeFunctionEntity function) {
         if (function != null) {
             compositeFunctions.add(function);
@@ -122,9 +116,6 @@ public class UserEntity {
         }
     }
 
-    /**
-     * Удалить композитную функцию у пользователя
-     */
     public void removeCompositeFunction(CompositeFunctionEntity function) {
         if (function != null) {
             compositeFunctions.remove(function);
@@ -132,33 +123,21 @@ public class UserEntity {
         }
     }
 
-    /**
-     * Получить количество всех функций пользователя
-     */
     public int getTotalFunctionCount() {
         return tabulatedFunctions.size() + compositeFunctions.size();
     }
 
-    /**
-     * Проверить, существует ли функция у пользователя по имени
-     */
     public boolean hasTabulatedFunction(String name) {
         return tabulatedFunctions.stream()
                 .anyMatch(f -> f.getName() != null && f.getName().equals(name));
     }
 
-    /**
-     * Найти табулированную функцию по имени
-     */
     public Optional<TabulatedFunctionEntity> findTabulatedFunction(String name) {
         return tabulatedFunctions.stream()
                 .filter(f -> f.getName() != null && f.getName().equals(name))
                 .findFirst();
     }
 
-    /**
-     * Найти композитную функцию по выражению
-     */
     public Optional<CompositeFunctionEntity> findCompositeFunction(String expression) {
         return compositeFunctions.stream()
                 .filter(f -> f.getExpression() != null && f.getExpression().equals(expression))

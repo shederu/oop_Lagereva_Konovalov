@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "tabulated_function")
 public class TabulatedFunctionEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -12,31 +13,26 @@ public class TabulatedFunctionEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "data", columnDefinition = "BYTEA")
+    @Column(name = "data", columnDefinition = "BYTEA", nullable = false)
     private byte[] data;
 
-    @Column(name = "derivative", columnDefinition = "BYTEA")
+    @Column(name = "derivative", columnDefinition = "BYTEA", nullable = false)
     private byte[] derivative;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
     // ======================== CONSTRUCTORS ========================
 
-    public TabulatedFunctionEntity() {}
+    public TabulatedFunctionEntity() {
+    }
 
     public TabulatedFunctionEntity(String name, byte[] data, byte[] derivative, UserEntity user) {
         this.name = name;
         this.data = data;
         this.derivative = derivative;
         this.user = user;
-        if (user != null) {
-            this.userId = user.getId();
-        }
     }
 
     // ======================== GETTERS & SETTERS ========================
@@ -73,31 +69,21 @@ public class TabulatedFunctionEntity {
         this.derivative = derivative;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
     public UserEntity getUser() {
         return user;
     }
 
     public void setUser(UserEntity user) {
         this.user = user;
-        if (user != null) {
-            this.userId = user.getId();
-        }
     }
+
+    // ======================== TO STRING ========================
 
     @Override
     public String toString() {
         return "TabulatedFunctionEntity{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", userId=" + userId +
                 ", user=" + (user != null ? user.getLogin() : null) +
                 '}';
     }

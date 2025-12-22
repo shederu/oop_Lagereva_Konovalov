@@ -21,63 +21,140 @@ public class TabulatedFunctionService {
     @Autowired
     private TabulatedFunctionRepository repository;
 
+    // ================== СОЗДАНИЕ ИЗ ФУНКЦИИ ==================
+
     /**
-     * ✅ НОВЫЙ МЕТОД: Создать функцию из массивов X и Y
+     * Создать табулированную функцию по имени функции, интервалу и числу точек.
+     */
+    public TabulatedFunctionEntity createFromFunction(
+            String functionName,
+            Double min,
+            Double max,
+            Integer points,
+            UserEntity user
+    ) {
+        if (user == null || user.getId() == null) {
+            throw new IllegalArgumentException("Пользователь не задан при создании функции");
+        }
+        if (min == null || max == null || points == null) {
+            throw new IllegalArgumentException("min, max и points не должны быть null");
+        }
+        if (points < 2) {
+            throw new IllegalArgumentException("Количество точек должно быть ≥ 2");
+        }
+        if (max <= min) {
+            throw new IllegalArgumentException("max должно быть больше min");
+        }
+
+        try {
+            List<Double> xValues = new ArrayList<>();
+            List<Double> yValues = new ArrayList<>();
+
+            double step = (max - min) / (points - 1);
+
+            for (int i = 0; i < points; i++) {
+                double x = min + i * step;
+                xValues.add(x);
+
+                double y;
+                switch (functionName) {
+                    case "cos":
+                    case "Косинус":
+                        y = Math.cos(x);
+                        break;
+                    case "x^2":
+                    case "Квадрат":
+                        y = x * x;
+                        break;
+                    case "zero":
+                    case "Нулевая":
+                        y = 0.0;
+                        break;
+                    case "sin":
+                    case "Синус":
+                    default:
+                        y = Math.sin(x);
+                        break;
+                }
+                yValues.add(y);
+            }
+
+            return createFromArray(xValues, yValues, functionName, user);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка создания функции: " + e.getMessage(), e);
+        }
+    }
+
+    // ================== СОЗДАНИЕ ИЗ МАССИВОВ ==================
+
+    /**
+     * Создать функцию из массивов X и Y для конкретного пользователя.
      */
     public TabulatedFunctionEntity createFromArray(
             List<Double> xValues,
             List<Double> yValues,
             String name,
-            UserEntity user) {
+            UserEntity user
+    ) {
         validateInput(xValues, yValues);
+
+        if (user == null || user.getId() == null) {
+            throw new IllegalArgumentException("Пользователь не задан при сохранении функции");
+        }
+
         try {
-            List<Double> derivativeYValues = DerivativeCalculator.calculateDerivative(xValues, yValues);
+            List<Double> derivativeYValues =
+                    DerivativeCalculator.calculateDerivative(xValues, yValues);
+
             TabulatedFunctionEntity entity = new TabulatedFunctionEntity();
-            entity.setName(name != null && !name.trim().isEmpty() ? name : "Функция_" + System.currentTimeMillis());
+            entity.setName(
+                    name != null && !name.trim().isEmpty()
+                            ? name
+                            : "Функция_" + System.currentTimeMillis()
+            );
             entity.setData(serializeDoubleList(yValues));
             entity.setDerivative(serializeDoubleList(derivativeYValues));
             entity.setUser(user);
+
             return repository.save(entity);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сериализации данных: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * Получить функцию по ID с десериализацией данных
-     */
+    // ================== ЧТЕНИЕ / ОБНОВЛЕНИЕ / УДАЛЕНИЕ ==================
+
     public TabulatedFunctionEntity getById(Long id, UserEntity user) {
         Optional<TabulatedFunctionEntity> optional = repository.findByIdAndUser(id, user);
         return optional.orElse(null);
     }
 
-    /**
-     * Получить функцию по ID (для OperationsController)
-     */
     public TabulatedFunctionEntity getById(Long id) {
         Optional<TabulatedFunctionEntity> optional = repository.findById(id);
         return optional.orElse(null);
     }
 
-    /**
-     * Получить все функции пользователя
-     */
     public List<TabulatedFunctionEntity> getAllByUser(UserEntity user) {
         return repository.findByUser(user);
     }
 
-    /**
-     * Обновить функцию
-     */
-    public TabulatedFunctionEntity update(Long id, List<Double> xValues, List<Double> yValues, UserEntity user) {
+    public TabulatedFunctionEntity update(Long id,
+                                          List<Double> xValues,
+                                          List<Double> yValues,
+                                          UserEntity user) {
         validateInput(xValues, yValues);
+
         Optional<TabulatedFunctionEntity> optional = repository.findByIdAndUser(id, user);
         if (optional.isPresent()) {
             try {
                 TabulatedFunctionEntity entity = optional.get();
-                List<Double> derivativeYValues = DerivativeCalculator.calculateDerivative(xValues, yValues);
+
+                List<Double> derivativeYValues =
+                        DerivativeCalculator.calculateDerivative(xValues, yValues);
+
                 entity.setData(serializeDoubleList(yValues));
                 entity.setDerivative(serializeDoubleList(derivativeYValues));
+
                 return repository.save(entity);
             } catch (IOException e) {
                 throw new RuntimeException("Ошибка сериализации данных: " + e.getMessage(), e);
@@ -86,19 +163,13 @@ public class TabulatedFunctionService {
         return null;
     }
 
-    /**
-     * Удалить функцию
-     */
     public void delete(Long id, UserEntity user) {
         Optional<TabulatedFunctionEntity> optional = repository.findByIdAndUser(id, user);
-        if (optional.isPresent()) {
-            repository.delete(optional.get());
-        }
+        optional.ifPresent(repository::delete);
     }
 
-    /**
-     * ✅ НОВЫЙ МЕТОД: Загрузить функцию из БД в объект TabulatedFunction
-     */
+    // ================== РАБОТА С TabulatedFunction ==================
+
     public TabulatedFunction loadFunctionFromDb(Long id) {
         TabulatedFunctionEntity entity = getById(id);
         if (entity == null) {
@@ -112,7 +183,7 @@ public class TabulatedFunctionService {
             double[] yArray = new double[yValues.size()];
 
             for (int i = 0; i < yValues.size(); i++) {
-                xArray[i] = (double) i;
+                xArray[i] = i; // если нужно, можно хранить X отдельно
                 yArray[i] = yValues.get(i);
             }
 
@@ -122,10 +193,15 @@ public class TabulatedFunctionService {
         }
     }
 
-    /**
-     * ✅ НОВЫЙ МЕТОД: Сохранить функцию в БД
-     */
-    public TabulatedFunctionEntity saveFunctionToDb(TabulatedFunction function, String name, Long userId) {
+    public TabulatedFunctionEntity saveFunctionToDb(
+            TabulatedFunction function,
+            String name,
+            UserEntity user
+    ) {
+        if (user == null || user.getId() == null) {
+            throw new IllegalArgumentException("Пользователь не задан при сохранении функции");
+        }
+
         try {
             double[] xArray = new double[function.getCount()];
             double[] yArray = new double[function.getCount()];
@@ -140,13 +216,18 @@ public class TabulatedFunctionService {
             for (double x : xArray) xValues.add(x);
             for (double y : yArray) yValues.add(y);
 
-            List<Double> derivativeYValues = DerivativeCalculator.calculateDerivative(xValues, yValues);
+            List<Double> derivativeYValues =
+                    DerivativeCalculator.calculateDerivative(xValues, yValues);
 
             TabulatedFunctionEntity entity = new TabulatedFunctionEntity();
-            entity.setName(name != null && !name.trim().isEmpty() ? name : "Результат_" + System.currentTimeMillis());
+            entity.setName(
+                    name != null && !name.trim().isEmpty()
+                            ? name
+                            : "Результат_" + System.currentTimeMillis()
+            );
             entity.setData(serializeDoubleList(yValues));
             entity.setDerivative(serializeDoubleList(derivativeYValues));
-            entity.setUserId(userId);
+            entity.setUser(user);
 
             return repository.save(entity);
         } catch (IOException e) {
@@ -154,10 +235,11 @@ public class TabulatedFunctionService {
         }
     }
 
-    /**
-     * ✅ НОВЫЙ МЕТОД: Конвертировать функцию в DTO
-     */
-    public TabulatedFunctionDto functionToDto(TabulatedFunction function, String name, Long userId) {
+    public TabulatedFunctionDto functionToDto(
+            TabulatedFunction function,
+            String name,
+            Long userId // можно не использовать, если не нужен в DTO
+    ) {
         try {
             List<Double> xValues = new ArrayList<>();
             List<Double> yValues = new ArrayList<>();
@@ -178,67 +260,41 @@ public class TabulatedFunctionService {
         }
     }
 
-    /**
-     * ✅ НОВЫЙ МЕТОД: Создать функцию из математической функции
-     */
-    public TabulatedFunctionEntity createFromFunction(
-            String functionName,
-            Double min,
-            Double max,
-            Integer points,
-            UserEntity user) {
-        try {
-            List<Double> xValues = new ArrayList<>();
-            List<Double> yValues = new ArrayList<>();
+    // ================== СЕРИАЛИЗАЦИЯ / ДЕСЕРИАЛИЗАЦИЯ ==================
 
-            double step = (max - min) / (points - 1);
-            for (int i = 0; i < points; i++) {
-                double x = min + i * step;
-                xValues.add(x);
-                // Здесь подставь нужную функцию вместо Math.sin
-                yValues.add(Math.sin(x));
-            }
-
-            return createFromArray(xValues, yValues, functionName, user);
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка создания функции: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Сериализует список Double в byte[]
-     */
     private byte[] serializeDoubleList(List<Double> values) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
+
         dos.writeInt(values.size());
         for (Double value : values) {
             dos.writeDouble(value);
         }
         dos.flush();
+
         return baos.toByteArray();
     }
 
-    /**
-     * Десериализует byte[] обратно в List
-     */
     public List<Double> deserializeDoubleList(byte[] data) throws IOException {
         if (data == null || data.length == 0) {
             return new ArrayList<>();
         }
+
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bais);
+
         int size = dis.readInt();
         List<Double> values = new ArrayList<>();
+
         for (int i = 0; i < size; i++) {
             values.add(dis.readDouble());
         }
+
         return values;
     }
 
-    /**
-     * Валидация входных данных
-     */
+    // ================== ВАЛИДАЦИЯ ==================
+
     private void validateInput(List<Double> xValues, List<Double> yValues) {
         if (xValues == null || yValues == null) {
             throw new IllegalArgumentException("X и Y не должны быть null");
@@ -252,8 +308,10 @@ public class TabulatedFunctionService {
         for (int i = 1; i < xValues.size(); i++) {
             if (xValues.get(i) <= xValues.get(i - 1)) {
                 throw new IllegalArgumentException(
-                        String.format("X не отсортирован: позиция %d, значение %.2f <= %.2f",
-                                i, xValues.get(i), xValues.get(i - 1))
+                        String.format(
+                                "X не отсортирован: позиция %d, значение %.2f <= %.2f",
+                                i, xValues.get(i), xValues.get(i - 1)
+                        )
                 );
             }
         }
