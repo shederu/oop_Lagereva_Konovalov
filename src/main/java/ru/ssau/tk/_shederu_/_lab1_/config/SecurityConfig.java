@@ -53,6 +53,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register").permitAll()
+                        .requestMatchers("/api/users/login").permitAll()  // ✅ Позволяем POST без auth
+                        .requestMatchers("/api/users/me").authenticated()  // ✅ Только с Basic Auth
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/tabulatedFunctions/**").authenticated()
                         .requestMatchers("/api/compositeFunctions/**").authenticated()
@@ -65,6 +67,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {

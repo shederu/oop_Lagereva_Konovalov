@@ -150,7 +150,7 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
                 type="text"
                 value={functionName}
                 onChange={(e) => setFunctionName(e.target.value)}
-                placeholder="Например: TestFunc"
+                placeholder="Имя вашей функции"
                 style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
               />
             </div>
