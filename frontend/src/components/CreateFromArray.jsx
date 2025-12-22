@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
+import Toast from './Toast';
 
 export default function CreateFromArray({ onClose, onSuccess, existingFunctions = [] }) {
   const [size, setSize] = useState('');
@@ -8,6 +9,7 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
   const [showTable, setShowTable] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null); // ✅ НОВОЕ
 
   const handleGenerateTable = () => {
     setError('');
@@ -54,7 +56,6 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
     return null;
   };
 
-  // ✅ НОВАЯ ФУНКЦИЯ: Проверка на дубликаты
   const validateFunctionName = () => {
     const nameExists = existingFunctions.some(
       f => f.name?.toLowerCase() === functionName.trim().toLowerCase()
@@ -74,7 +75,6 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
       return;
     }
 
-    // ✅ ПРОВЕРКА НА ДУБЛИКАТЫ ПЕРЕД ОТПРАВКОЙ!
     if (!validateFunctionName()) {
       return;
     }
@@ -93,12 +93,23 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
 
       await api.createFromArray(xArray, yArray, functionName.trim());
 
-      alert('✓ Функция успешно создана!');
+      // ✅ ВМЕСТО alert() - красивый Toast!
+      setToast({
+        message: `✨ Функция "${functionName}" успешно создана!`,
+        type: 'success'
+      });
 
-      if (onSuccess) onSuccess();
-      onClose();
+      setTimeout(() => {
+        if (onSuccess) onSuccess();
+        onClose();
+      }, 1500); // Даём время на анимацию
+
     } catch (err) {
       setError(err.message || 'Ошибка сервера');
+      setToast({
+        message: err.message || 'Ошибка при создании функции',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -106,7 +117,16 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
 
   return (
     <>
-      {/* Overlay - тёмный фон */}
+      {/* ✅ TOAST УВЕДОМЛЕНИЕ */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Overlay */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -137,7 +157,14 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
         <h2 style={{ marginTop: 0 }}>Создать функцию из массива</h2>
 
         {error && (
-          <div style={{ color: '#721c24', backgroundColor: '#f8d7da', padding: '10px', marginBottom: '15px', borderRadius: '4px' }}>
+          <div style={{
+            color: '#721c24',
+            backgroundColor: '#f8d7da',
+            padding: '10px',
+            marginBottom: '15px',
+            borderRadius: '4px',
+            border: '1px solid #f5c6cb'
+          }}>
             {error}
           </div>
         )}
@@ -216,23 +243,31 @@ export default function CreateFromArray({ onClose, onSuccess, existingFunctions 
               <button
                 onClick={handleCreateFunction}
                 disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: loading ? '#6c757d' : '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1
+                }}
               >
-                {loading ? 'Сохранение...' : 'Создать'}
+                {loading ? '⏳ Сохранение...' : '✓ Создать'}
               </button>
 
               <button
                 onClick={() => setShowTable(false)}
                 style={{ padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
               >
-                Назад
+                ← Назад
               </button>
 
               <button
                 onClick={onClose}
                 style={{ padding: '10px 20px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginLeft: 'auto' }}
               >
-                Закрыть
+                ✕ Закрыть
               </button>
             </div>
           </div>
