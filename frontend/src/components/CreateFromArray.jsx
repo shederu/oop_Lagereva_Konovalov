@@ -1,45 +1,35 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 
-export default function CreateFromArray({ onClose, onSuccess }) {
+export default function CreateFromArray({ onClose, onSuccess, existingFunctions = [] }) {
   const [size, setSize] = useState('');
   const [functionName, setFunctionName] = useState('');
   const [points, setPoints] = useState([]);
   const [showTable, setShowTable] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sizeError, setSizeError] = useState('');
-  const [nameError, setNameError] = useState('');
 
   const handleGenerateTable = () => {
-    setSizeError('');
+    setError('');
+    const n = parseFloat(size);
 
-    if (!size.trim()) {
-      setSizeError('Пожалуйста, введите количество точек');
+    if (isNaN(n) || n <= 0) {
+      setError('Введите положительное число');
       return;
     }
 
-    const n = parseInt(size, 10);
-
-    if (isNaN(n)) {
-      setSizeError('Должно быть число');
+    if (!Number.isInteger(n)) {
+      setError('Количество точек должно быть целым числом');
       return;
     }
 
-    if (n <= 0) {
-      setSizeError('Количество точек должно быть положительным');
-      return;
-    }
-
-    if (n > 10000) {
-      setSizeError('Слишком много точек (макс 10000)');
+    if (n < 2) {
+      setError('Минимум 2 точки');
       return;
     }
 
     setPoints(Array(n).fill(null).map(() => ({ x: '', y: '' })));
     setShowTable(true);
-    setSizeError('');
   };
 
   const handleUpdatePoint = (index, field, value) => {
@@ -50,316 +40,170 @@ export default function CreateFromArray({ onClose, onSuccess }) {
 
   const validatePoints = () => {
     for (let i = 0; i < points.length; i++) {
-      const { x, y } = points[i];
-
-      if (!x.trim() || !y.trim()) {
-        return `Точка ${i + 1}: оба значения должны быть заполнены`;
-      }
-
-      const xNum = parseFloat(x);
-      const yNum = parseFloat(y);
-
-      if (isNaN(xNum) || isNaN(yNum)) {
-        return `Точка ${i + 1}: значения должны быть числами`;
+      if (points[i].x === '' || points[i].y === '') {
+        return `Точка ${i + 1}: заполните оба поля`;
       }
     }
 
     for (let i = 1; i < points.length; i++) {
-      const prevX = parseFloat(points[i - 1].x);
-      const currX = parseFloat(points[i].x);
-      if (prevX >= currX) {
-        return `Значения X должны быть в возрастающем порядке (ошибка между точками ${i} и ${i + 1})`;
+      if (parseFloat(points[i].x) <= parseFloat(points[i - 1].x)) {
+        return `Ошибка: X${i} (${points[i].x}) должен быть больше X${i - 1} (${points[i - 1].x})`;
       }
     }
 
     return null;
   };
 
+  // ✅ НОВАЯ ФУНКЦИЯ: Проверка на дубликаты
   const validateFunctionName = () => {
-    if (!functionName.trim()) {
-      return 'Пожалуйста, введите имя функции';
+    const nameExists = existingFunctions.some(
+      f => f.name?.toLowerCase() === functionName.trim().toLowerCase()
+    );
+    if (nameExists) {
+      setError(`⚠️ Функция "${functionName}" уже существует!`);
+      return false;
     }
-    if (functionName.trim().length < 2) {
-      return 'Имя функции должно содержать минимум 2 символа';
-    }
-    if (functionName.trim().length > 50) {
-      return 'Имя функции не должно превышать 50 символов';
-    }
-    return null;
+    return true;
   };
 
   const handleCreateFunction = async () => {
-    // Валидация имени
-    const nameValidationError = validateFunctionName();
-    if (nameValidationError) {
-      setNameError(nameValidationError);
+    setError('');
+
+    if (!functionName.trim()) {
+      setError('Введите имя функции');
       return;
     }
 
-    // Валидация точек
-    const validationError = validatePoints();
-    if (validationError) {
-      setError(validationError);
+    // ✅ ПРОВЕРКА НА ДУБЛИКАТЫ ПЕРЕД ОТПРАВКОЙ!
+    if (!validateFunctionName()) {
+      return;
+    }
+
+    const pointsErr = validatePoints();
+    if (pointsErr) {
+      setError(pointsErr);
       return;
     }
 
     setLoading(true);
-    setNameError('');
-    setError('');
+
     try {
       const xArray = points.map(p => parseFloat(p.x));
       const yArray = points.map(p => parseFloat(p.y));
 
-      const response = await api.createFromArray(xArray, yArray, functionName.trim());
+      await api.createFromArray(xArray, yArray, functionName.trim());
 
-      setSuccess('✓ Функция успешно создана!');
-      setPoints([]);
-      setSize('');
-      setFunctionName('');
-      setShowTable(false);
+      alert('✓ Функция успешно создана!');
 
-      if (onSuccess) {
-        onSuccess(response);
-      }
-
-      setTimeout(() => {
-        if (onClose) onClose();
-      }, 2000);
+      if (onSuccess) onSuccess();
+      onClose();
     } catch (err) {
-      setError(err.message || 'Ошибка при создании функции');
+      setError(err.message || 'Ошибка сервера');
     } finally {
       setLoading(false);
     }
   };
 
-  const containerStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    zIndex: 1000
-  };
-
-  const modalStyle = {
-    backgroundColor: '#ffffff',
-    borderRadius: '8px',
-    padding: '30px',
-    width: '90%',
-    maxWidth: '700px',
-    maxHeight: '90vh',
-    overflowY: 'auto',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #dee2e6'
-  };
-
-  const inputStyle = {
-    padding: '10px 12px',
-    marginRight: '10px',
-    border: '1px solid #dee2e6',
-    borderRadius: '4px',
-    backgroundColor: '#f8f9fa',
-    color: '#212529',
-    fontSize: '14px'
-  };
-
-  const buttonStyle = {
-    padding: '10px 20px',
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '500'
-  };
-
-  const errorStyle = {
-    color: '#721c24',
-    fontSize: '13px',
-    marginTop: '6px',
-    padding: '8px 12px',
-    backgroundColor: '#f8d7da',
-    borderRadius: '4px',
-    border: '1px solid #f5c6cb'
-  };
-
-  const successStyle = {
-    color: '#155724',
-    fontSize: '13px',
-    marginTop: '6px',
-    padding: '8px 12px',
-    backgroundColor: '#d4edda',
-    borderRadius: '4px',
-    border: '1px solid #c3e6cb'
-  };
-
-  const labelStyle = {
-    color: '#495057',
-    display: 'block',
-    marginBottom: '8px',
-    fontWeight: '500',
-    fontSize: '14px'
-  };
-
-  const sectionStyle = {
-    marginBottom: '20px'
-  };
-
   return (
-    <div style={containerStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ color: '#212529', marginTop: 0 }}>Создать функцию из массивов</h2>
+    <>
+      {/* Overlay - тёмный фон */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 999
+      }} onClick={onClose} />
 
-        {/* Шаг 1: Имя функции */}
-        <div style={sectionStyle}>
-          <label htmlFor="function-name" style={labelStyle}>
-            Имя функции:
-          </label>
-          <input
-            id="function-name"
-            type="text"
-            value={functionName}
-            onChange={(e) => {
-              setFunctionName(e.target.value);
-              setNameError('');
-            }}
-            placeholder="Например: Моя функция"
-            disabled={loading}
-            style={{...inputStyle, marginRight: 0, width: '100%', boxSizing: 'border-box'}}
-          />
-          {nameError && <div style={errorStyle}>{nameError}</div>}
-        </div>
+      {/* Модальное окно */}
+      <div style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        maxWidth: '700px',
+        width: '90%',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        border: '1px solid #ddd',
+        padding: '20px',
+        borderRadius: '8px',
+        background: '#fff',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+        zIndex: 1000
+      }}>
+        <h2 style={{ marginTop: 0 }}>Создать функцию из массива</h2>
 
-        {/* Шаг 2: Количество точек */}
-        <div style={sectionStyle}>
-          <label htmlFor="points-count" style={labelStyle}>
-            Количество точек:
-          </label>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <input
-              id="points-count"
-              type="number"
-              value={size}
-              onChange={(e) => {
-                setSize(e.target.value);
-                setSizeError('');
-              }}
-              placeholder="Введите число"
-              min="1"
-              max="10000"
-              disabled={loading}
-              style={{...inputStyle, marginRight: 0, flex: 1}}
-            />
+        {error && (
+          <div style={{ color: '#721c24', backgroundColor: '#f8d7da', padding: '10px', marginBottom: '15px', borderRadius: '4px' }}>
+            {error}
+          </div>
+        )}
+
+        {!showTable ? (
+          <div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Имя функции:</label>
+              <input
+                type="text"
+                value={functionName}
+                onChange={(e) => setFunctionName(e.target.value)}
+                placeholder="Например: TestFunc"
+                style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Количество точек:</label>
+              <input
+                type="number"
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                placeholder="Ваше число"
+                style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
+              />
+            </div>
+
             <button
               onClick={handleGenerateTable}
-              disabled={!size || loading}
-              style={{...buttonStyle, opacity: (!size || loading) ? 0.6 : 1}}
+              style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
             >
-              Сгенерировать
+              Далее
             </button>
           </div>
-          {sizeError && <div style={errorStyle}>{sizeError}</div>}
-        </div>
-
-        {/* Шаг 3: Таблица для ввода X и Y */}
-        {showTable && (
-          <div style={sectionStyle}>
-            <h3 style={{ color: '#212529', marginBottom: '15px' }}>Введите значения X и Y:</h3>
-            <div style={{ overflowX: 'auto', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-              <table style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                minWidth: '300px'
-              }}>
+        ) : (
+          <div>
+            <div style={{ marginBottom: '15px', maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '4px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                    <th style={{
-                      padding: '12px',
-                      textAlign: 'left',
-                      color: '#495057',
-                      fontWeight: '600',
-                      width: '50px',
-                      minWidth: '50px'
-                    }}>
-                      #
-                    </th>
-                    <th style={{
-                      padding: '12px',
-                      textAlign: 'left',
-                      color: '#495057',
-                      fontWeight: '600',
-                      width: '50%',
-                      minWidth: '150px'
-                    }}>
-                      X
-                    </th>
-                    <th style={{
-                      padding: '12px',
-                      textAlign: 'left',
-                      color: '#495057',
-                      fontWeight: '600',
-                      width: '50%',
-                      minWidth: '150px'
-                    }}>
-                      Y
-                    </th>
+                  <tr style={{ background: '#f8f9fa' }}>
+                    <th style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'left' }}>#</th>
+                    <th style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'left' }}>X</th>
+                    <th style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'left' }}>Y</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {points.map((point, index) => (
-                    <tr key={index} style={{ borderBottom: '1px solid #dee2e6' }}>
-                      <td style={{
-                        padding: '12px',
-                        color: '#6c757d',
-                        fontWeight: '500',
-                        width: '50px',
-                        minWidth: '50px',
-                        textAlign: 'center'
-                      }}>
-                        {index + 1}
-                      </td>
-                      <td style={{ padding: '8px', width: '50%', minWidth: '150px' }}>
+                  {points.map((p, idx) => (
+                    <tr key={idx}>
+                      <td style={{ padding: '8px', borderBottom: '1px solid #eee', textAlign: 'center' }}>{idx + 1}</td>
+                      <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
                         <input
                           type="number"
-                          value={point.x}
-                          onChange={(e) => handleUpdatePoint(index, 'x', e.target.value)}
-                          placeholder="Значение X"
-                          step="any"
-                          disabled={loading}
-                          style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            border: '1px solid #dee2e6',
-                            borderRadius: '4px',
-                            backgroundColor: '#f8f9fa',
-                            color: '#212529',
-                            fontSize: '14px',
-                            boxSizing: 'border-box'
-                          }}
+                          value={p.x}
+                          onChange={(e) => handleUpdatePoint(idx, 'x', e.target.value)}
+                          placeholder="X"
+                          style={{ padding: '6px', width: '90%', border: '1px solid #ccc', borderRadius: '4px' }}
                         />
                       </td>
-                      <td style={{ padding: '8px', width: '50%', minWidth: '150px' }}>
+                      <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
                         <input
                           type="number"
-                          value={point.y}
-                          onChange={(e) => handleUpdatePoint(index, 'y', e.target.value)}
-                          placeholder="Значение Y"
-                          step="any"
-                          disabled={loading}
-                          style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            border: '1px solid #dee2e6',
-                            borderRadius: '4px',
-                            backgroundColor: '#f8f9fa',
-                            color: '#212529',
-                            fontSize: '14px',
-                            boxSizing: 'border-box'
-                          }}
+                          value={p.y}
+                          onChange={(e) => handleUpdatePoint(idx, 'y', e.target.value)}
+                          placeholder="Y"
+                          style={{ padding: '6px', width: '90%', border: '1px solid #ccc', borderRadius: '4px' }}
                         />
                       </td>
                     </tr>
@@ -367,42 +211,33 @@ export default function CreateFromArray({ onClose, onSuccess }) {
                 </tbody>
               </table>
             </div>
-            <div style={{
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffeeba',
-              color: '#856404',
-              padding: '12px',
-              borderRadius: '4px',
-              marginTop: '15px',
-              fontSize: '13px'
-            }}>
-              ⚠️ Значения X должны быть в возрастающем порядке!
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={handleCreateFunction}
+                disabled={loading}
+                style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                {loading ? 'Сохранение...' : 'Создать'}
+              </button>
+
+              <button
+                onClick={() => setShowTable(false)}
+                style={{ padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Назад
+              </button>
+
+              <button
+                onClick={onClose}
+                style={{ padding: '10px 20px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginLeft: 'auto' }}
+              >
+                Закрыть
+              </button>
             </div>
           </div>
         )}
-
-        {error && <div style={errorStyle}>{error}</div>}
-        {success && <div style={successStyle}>{success}</div>}
-
-        <div style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>
-          <button
-            onClick={onClose}
-            disabled={loading}
-            style={{ ...buttonStyle, backgroundColor: '#6c757d', opacity: loading ? 0.6 : 1 }}
-          >
-            Отмена
-          </button>
-          {showTable && (
-            <button
-              onClick={handleCreateFunction}
-              disabled={loading || points.length === 0 || !functionName.trim()}
-              style={{ ...buttonStyle, backgroundColor: '#28a745', opacity: (loading || points.length === 0 || !functionName.trim()) ? 0.6 : 1 }}
-            >
-              {loading ? 'Создание...' : 'Создать функцию'}
-            </button>
-          )}
-        </div>
       </div>
-    </div>
+    </>
   );
 }
