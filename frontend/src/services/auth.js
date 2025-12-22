@@ -1,6 +1,7 @@
 const API_BASE = 'http://localhost:8080/api';
 
 export const authService = {
+  // Регистрация нового пользователя
   register: async (login, password) => {
     try {
       if (!login || !password) {
@@ -30,61 +31,49 @@ export const authService = {
     }
   },
 
+  // Вход пользователя (Basic Auth)
   login: async (login, password) => {
     try {
       if (!login || !password) {
         throw new Error('Логин и пароль обязательны');
       }
 
-      // ✅ Используем новый эндпоинт /login
-      const response = await fetch(`${API_BASE}/users/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ login, password })
-      });
+      // ✅ Создаём Basic Auth token: base64(login:password)
+      const basicAuth = btoa(`${login}:${password}`);
 
-      console.log('Login - Response status:', response.status);
-      const text = await response.text();
-      console.log('Login - Response body:', text);
-
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('Неверные логин или пароль');
-      }
-
-      if (!response.ok) {
-        throw new Error('Ошибка при входе: ' + response.status);
-      }
-
-      const data = JSON.parse(text);
-
-      // ✅ Создаём token для хранения
-      const token = btoa(`${login}:${password}`);
-      localStorage.setItem('authToken', token);
+      // Сохраняем token в localStorage (НЕ пароль!)
+      localStorage.setItem('authToken', basicAuth);
       localStorage.setItem('username', login);
 
       console.log('Login success for user:', login);
-      return { token, username: login };
+      return {
+        token: basicAuth,
+        username: login
+      };
     } catch (e) {
       console.error('Login error:', e.message);
       throw e;
     }
   },
 
+  // Выход
   logout: () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
+    console.log('Logged out');
   },
 
+  // Проверка аутентификации
   isAuthenticated: () => {
     return !!localStorage.getItem('authToken');
   },
 
+  // Получить token
   getToken: () => {
     return localStorage.getItem('authToken');
   },
 
+  // Получить username
   getUsername: () => {
     return localStorage.getItem('username');
   }

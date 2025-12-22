@@ -2,14 +2,13 @@ package ru.ssau.tk._shederu_._lab1_.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.ssau.tk._shederu_._lab1_.dto.UserRegistrationDto;
 import ru.ssau.tk._shederu_._lab1_.entities.RoleEntity;
 import ru.ssau.tk._shederu_._lab1_.entities.UserEntity;
 import ru.ssau.tk._shederu_._lab1_.repository.RoleRepository;
 import ru.ssau.tk._shederu_._lab1_.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,24 +18,26 @@ import java.util.Set;
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // ✅ Constructor Injection
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public UserEntity registerUser(UserRegistrationDto dto) {
         if (userRepository.existsByLogin(dto.getLogin())) {
-            logger.warn("Registration failed: user with login {} already exists", dto.getLogin());
+            logger.warn("Registration failed: user with login already exists: {}", dto.getLogin());
             throw new RuntimeException("User already exists");
         }
 
         UserEntity user = new UserEntity();
         user.setLogin(dto.getLogin());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setPassword(passwordEncoder.encode(dto.getPassword())); // ✅ ENCODE!
 
         RoleEntity creatorRole = roleRepository.findByName("CREATOR")
                 .orElseGet(() -> {
@@ -56,22 +57,19 @@ public class UserService {
     public void assignRoleToUser(Long userId, String roleName) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         RoleEntity role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
-
         user.getRoles().add(role);
         userRepository.save(user);
-        logger.info("Role {} assigned to user {}", roleName, user.getLogin());
+        logger.info("Role assigned to user: role={}, login={}", roleName, user.getLogin());
     }
 
     public void removeRoleFromUser(Long userId, String roleName) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         user.getRoles().removeIf(role -> role.getName().equals(roleName));
         userRepository.save(user);
-        logger.info("Role {} removed from user {}", roleName, user.getLogin());
+        logger.info("Role removed from user: role={}, login={}", roleName, user.getLogin());
     }
 
     public List<UserEntity> getAllUsers() {
@@ -102,10 +100,10 @@ public class UserService {
                         user.setLogin(userDetails.getLogin());
                     }
                     if (userDetails.getPassword() != null) {
-                        user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+                        user.setPassword(passwordEncoder.encode(userDetails.getPassword())); // ✅ ENCODE!
                     }
                     UserEntity updated = userRepository.save(user);
-                    logger.info("User {} updated successfully", id);
+                    logger.info("User updated successfully: {}", id);
                     return updated;
                 })
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
@@ -113,10 +111,10 @@ public class UserService {
 
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            logger.warn("Delete failed: user with ID {} not found", id);
+            logger.warn("Delete failed: user with ID not found: {}", id);
             throw new RuntimeException("User not found with id: " + id);
         }
         userRepository.deleteById(id);
-        logger.info("User with id {} deleted", id);
+        logger.info("User with id deleted: {}", id);
     }
 }
