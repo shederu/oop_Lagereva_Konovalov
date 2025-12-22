@@ -6,7 +6,10 @@ const FUNCTIONS = {
   'identity': 'Тождественная функция',
   'zero': 'Нулевая функция',
   'unit': 'Единичная функция',
-  'constant': 'Постоянная функция'
+  'constant': 'Постоянная функция',
+  'sin': 'Синус',
+  'cos': 'Косинус',
+  'ln': 'Натуральный логарифм',
 };
 
 export default function CreateFromFunction() {
